@@ -44,7 +44,26 @@ src/
 
 ---
 
-## ⚙️ 3. TypeScript Rules
+## 📝 3. Naming Convention (STRICT)
+
+| Loại | Convention | Ví dụ |
+|---|---|---|
+| Class / Entity | `PascalCase.ts` | `PlayerEntity.ts` |
+| Scene | `PascalCase.ts` | `GameplayScene.ts` |
+| Component | `PascalCase.ts` | `MovementComponent.ts` |
+| React Component | `PascalCase.tsx` | `HudOverlay.tsx` |
+| Util / Helper | `camelCase.ts` | `objectPool.ts` |
+| Constants file | `constants.ts` | `src/core/constants.ts` |
+| Data file | `camelCase.json` | `levelData.json` |
+| Thư mục | `camelCase` | `src/core/`, `src/scenes/` |
+| Interface | `IPascalCase` | `IPlayerEntity` |
+| Enum | `PascalCase` | `GameState` |
+| Hằng số | `UPPER_SNAKE_CASE` | `MAX_SPEED`, `LANE_COUNT` |
+| Biến / Hàm | `camelCase` | `rushHourTimer`, `spawnVehicle()` |
+
+---
+
+## ⚙️ 4. TypeScript Rules
 
 1. **Không dùng `any`** — Mọi type BẮT BUỘC phải khai báo rõ ràng.
 2. **Interface cho Entity/Component:** Mọi entity và component BẮT BUỘC có interface riêng.
@@ -66,7 +85,7 @@ let state = "start";
 
 ---
 
-## 🏗️ 4. Architecture Rules
+## 🏗️ 5. Architecture Rules
 
 1. **Component Pattern bắt buộc:** Mỗi entity tách logic thành các component riêng:
    - `MovementComponent` — xử lý di chuyển
@@ -79,7 +98,7 @@ let state = "start";
 
 ---
 
-## ⚡ 5. Performance Rules
+## ⚡ 6. Performance Rules
 
 1. **KHÔNG tạo object mới trong game loop** — gây GC spike, drop FPS.
 2. **KHÔNG dùng `console.log` trong production** — chỉ dùng khi debug, xóa trước khi commit.
@@ -88,7 +107,7 @@ let state = "start";
 
 ---
 
-## 🔄 6. Git Workflow
+## 🔄 7. Git Workflow
 
 Ưu tiên **nhánh cố định** thay vì tạo nhánh mới cho từng thay đổi nhỏ:
 
@@ -109,7 +128,7 @@ let state = "start";
 
 ---
 
-## 🗺️ 7. Level Design Rules
+## 🗺️ 8. Level Design Rules
 
 1. Mỗi level map với 1 địa danh Đà Nẵng thực tế.
 2. Độ khó tăng theo `rushHourTimer` — KHÔNG hardcode difficulty.
@@ -118,7 +137,7 @@ let state = "start";
 
 ---
 
-## ✅ 8. Checklist trước khi commit
+## ✅ 9. Checklist trước khi commit
 
 - [ ] Không có `console.log` thừa
 - [ ] Không có `any` type

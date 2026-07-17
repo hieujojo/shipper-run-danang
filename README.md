@@ -75,3 +75,19 @@ shipper-run-danang/
 ## 📜 Nguyên tắc phát triển (AI Coding Rules)
 
 Mọi hoạt động phát triển, viết code và đóng góp cho dự án này **BẮT BUỘC** phải tuân thủ nghiêm ngặt các nguyên tắc được định nghĩa trong `RULES.md`. Vui lòng đọc kỹ tài liệu này trước khi tiến hành chỉnh sửa hoặc xây dựng tính năng mới.
+
+---
+
+## ⚡ Cơ chế tốc độ tăng dần (Speed Scaling)
+
+Game áp dụng cơ chế tốc độ kiểu **Subway Surfers / Temple Run**:
+
+| Thời gian | Multiplier (Level 1) | Cảm giác |
+|---|---|---|
+| 0s | 0.3x | Chậm, học cách chơi |
+| 20s | ~0.7x | Đang vào nhịp |
+| 60s | ~1.5x | Tốc độ chuẩn |
+| ~110s | 2.5x (MAX) | Tốc độ tối đa, giữ nguyên |
+
+- **Tốc độ khởi đầu, tốc độ tăng, ngưỡng tối đa** đều cấu hình trong `levelData.json` — không hardcode.
+- `speedMultiplier` áp dụng đồng thời lên: scroll đường, tốc độ xe địch, tần suất spawn xe.

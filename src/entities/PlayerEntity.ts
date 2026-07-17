@@ -1,5 +1,5 @@
 import { Container, Graphics } from "pixi.js";
-import { PLAYER_WIDTH, PLAYER_HEIGHT } from "../core/constants";
+import { PLAYER_WIDTH, PLAYER_HEIGHT, CANVAS_HEIGHT, CANVAS_WIDTH } from "../core/constants";
 import { MovementComponent } from "../components/MovementComponent";
 import { CollisionComponent } from "../components/CollisionComponent";
 import { InputComponent } from "../components/InputComponent";
@@ -7,7 +7,7 @@ import { InputComponent } from "../components/InputComponent";
 export interface IPlayerEntity {
   container: Container;
   init(x: number, y: number): void;
-  update(deltaTime: number): void;
+  update(deltaTime: number, roadLeft: number, roadRight: number): void;
   destroy(): void;
 }
 
@@ -44,7 +44,7 @@ export class PlayerEntity implements IPlayerEntity {
     this.container.addChild(this.graphics);
   }
 
-  update(deltaTime: number): void {
+  update(deltaTime: number, roadLeft: number, roadRight: number): void {
     const inputState = this.input.getState();
     const speed = 5;
 
@@ -53,9 +53,19 @@ export class PlayerEntity implements IPlayerEntity {
     if (inputState.up) this.container.y -= speed * deltaTime;
     if (inputState.down) this.container.y += speed * deltaTime;
 
+    // Giới hạn trong làn đường
+    const halfW = PLAYER_WIDTH / 2;
+    if (this.container.x - halfW < roadLeft) this.container.x = roadLeft + halfW;
+    if (this.container.x + halfW > roadRight) this.container.x = roadRight - halfW;
+
+    // Giới hạn trên dưới màn hình
+    const halfH = PLAYER_HEIGHT / 2;
+    if (this.container.y - halfH < 0) this.container.y = halfH;
+    if (this.container.y + halfH > CANVAS_HEIGHT) this.container.y = CANVAS_HEIGHT - halfH;
+
     // Sync collision bounds
-    this.collision.bounds.x = this.container.x - PLAYER_WIDTH / 2;
-    this.collision.bounds.y = this.container.y - PLAYER_HEIGHT / 2;
+    this.collision.bounds.x = this.container.x - halfW;
+    this.collision.bounds.y = this.container.y - halfH;
   }
 
   destroy(): void {

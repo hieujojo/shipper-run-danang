@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Application } from "pixi.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./core/constants";

@@ -69,7 +69,9 @@ export class GameplayScene {
   }
 
   update(deltaTime: number): void {
-    this.player?.update(deltaTime);
+    const roadLeft = CANVAS_WIDTH * 0.2;
+    const roadRight = CANVAS_WIDTH * 0.8;
+    this.player?.update(deltaTime, roadLeft, roadRight);
 
     // Spawn vehicles
     this.spawnTimer++;

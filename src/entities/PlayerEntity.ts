@@ -15,7 +15,7 @@ export class PlayerEntity implements IPlayerEntity {
   container: Container;
   private graphics: Graphics;
   private _movement: MovementComponent;
-  private collision: CollisionComponent;
+  collision: CollisionComponent;
   private input: InputComponent;
 
   constructor() {

@@ -1,17 +1,30 @@
-import { Application, Container, Graphics } from "pixi.js";
-import { CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT } from "../core/constants";
+import { Container, Graphics } from "pixi.js";
+import { CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT, SPAWN_INTERVAL } from "../core/constants";
 import { PlayerEntity } from "../entities/PlayerEntity";
+import { VehicleEntity } from "../entities/VehicleEntity";
+import { ObjectPool } from "../utils/objectPool";
 
 export class GameplayScene {
   container: Container;
   private player!: PlayerEntity;
+  private vehiclePool!: ObjectPool<VehicleEntity>;
+  private activeVehicles: VehicleEntity[] = [];
+  private spawnTimer: number = 0;
+  private laneWidth: number = 0;
+  private lanePositions: number[] = [];
 
-  constructor(_app: Application) {
+  constructor(_app: unknown) {
     this.container = new Container();
   }
 
   init(): void {
     this.container.removeChildren();
+    this.activeVehicles = [];
+    this.spawnTimer = 0;
+    this.laneWidth = (CANVAS_WIDTH * 0.6) / LANE_COUNT;
+    this.lanePositions = Array.from({ length: LANE_COUNT }, (_, i) =>
+      CANVAS_WIDTH * 0.2 + this.laneWidth * i + this.laneWidth / 2
+    );
 
     // Background
     const bg = new Graphics();
@@ -19,17 +32,16 @@ export class GameplayScene {
     bg.fill(0x1a1a2e);
     this.container.addChild(bg);
 
-    // Road background
+    // Road
     const road = new Graphics();
     road.rect(CANVAS_WIDTH * 0.2, 0, CANVAS_WIDTH * 0.6, CANVAS_HEIGHT);
     road.fill(0x2d2d2d);
     this.container.addChild(road);
 
     // Lane dividers
-    const laneWidth = (CANVAS_WIDTH * 0.6) / LANE_COUNT;
     for (let i = 1; i < LANE_COUNT; i++) {
       const divider = new Graphics();
-      const x = CANVAS_WIDTH * 0.2 + laneWidth * i;
+      const x = CANVAS_WIDTH * 0.2 + this.laneWidth * i;
       for (let y = 0; y < CANVAS_HEIGHT; y += 40) {
         divider.rect(x - 2, y, 4, 20);
       }
@@ -37,6 +49,17 @@ export class GameplayScene {
       divider.alpha = 0.3;
       this.container.addChild(divider);
     }
+
+    // Vehicle pool
+    this.vehiclePool = new ObjectPool<VehicleEntity>(
+      () => {
+        const v = new VehicleEntity();
+        this.container.addChild(v.container);
+        return v;
+      },
+      (v) => v.reset(),
+      6
+    );
 
     // Player
     this.player = new PlayerEntity();
@@ -46,6 +69,39 @@ export class GameplayScene {
 
   update(deltaTime: number): void {
     this.player?.update(deltaTime);
+
+    // Spawn vehicles
+    this.spawnTimer++;
+    if (this.spawnTimer >= SPAWN_INTERVAL) {
+      this.spawnTimer = 0;
+      this.spawnVehicle();
+    }
+
+    // Update vehicles
+    for (let i = this.activeVehicles.length - 1; i >= 0; i--) {
+      const vehicle = this.activeVehicles[i];
+      vehicle.update(deltaTime);
+
+      // Check collision
+      if (this.player.collision.checkCollision(vehicle.collision.bounds)) {
+        console.log("COLLISION!");
+      }
+
+      // Return to pool if off screen
+      if (vehicle.container.y > CANVAS_HEIGHT + 100) {
+        this.vehiclePool.release(vehicle);
+        this.activeVehicles.splice(i, 1);
+      }
+    }
+  }
+
+  private spawnVehicle(): void {
+    const lane = Math.floor(Math.random() * LANE_COUNT);
+    const x = this.lanePositions[lane];
+    const speed = 3 + Math.random() * 3;
+    const vehicle = this.vehiclePool.get();
+    vehicle.init(x, -80, speed);
+    this.activeVehicles.push(vehicle);
   }
 
   destroy(): void {

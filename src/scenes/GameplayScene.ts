@@ -13,6 +13,8 @@ export class GameplayScene {
   private laneWidth: number = 0;
   private lanePositions: number[] = [];
   onGameOver: (() => void) | null = null;
+  onLivesChange: ((lives: number) => void) | null = null;
+  private lives: number = 3;
 
   constructor(_app: unknown) {
     this.container = new Container();
@@ -22,6 +24,7 @@ export class GameplayScene {
     this.container.removeChildren();
     this.activeVehicles = [];
     this.spawnTimer = 0;
+    this.lives = 3;
     this.laneWidth = (CANVAS_WIDTH * 0.6) / LANE_COUNT;
     this.lanePositions = Array.from({ length: LANE_COUNT }, (_, i) =>
       CANVAS_WIDTH * 0.2 + this.laneWidth * i + this.laneWidth / 2
@@ -87,8 +90,16 @@ export class GameplayScene {
 
       // Check collision
       if (this.player.collision.checkCollision(vehicle.collision.bounds)) {
-        this.onGameOver?.();
-        return;
+        this.vehiclePool.release(vehicle);
+        this.activeVehicles.splice(i, 1);
+        this.lives--;
+        this.onLivesChange?.(this.lives);
+        if (this.lives <= 0) {
+          this.onGameOver?.();
+          return;
+        }
+        // Reset player về giữa đường
+        this.player.resetPosition(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.8);
       }
 
       // Return to pool if off screen

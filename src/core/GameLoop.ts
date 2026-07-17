@@ -15,7 +15,7 @@ export class GameLoop {
 
   onStateChange: ((state: GameState) => void) | null = null;
   onScoreUpdate: ((score: number) => void) | null = null;
-
+  onLivesChange: ((lives: number) => void) | null = null;
   constructor(app: Application) {
     this.app = app;
     this.stateManager = new GameStateManager();
@@ -24,6 +24,7 @@ export class GameLoop {
     this.gameOverScene = new GameOverScene(app);
 
     this.gameplayScene.onGameOver = () => this.transitionTo(GameState.GAME_OVER);
+    this.gameplayScene.onLivesChange = (l: number) => this.onLivesChange?.(l);
     this.startScene.onStart = () => this.transitionTo(GameState.GAMEPLAY);
     this.gameOverScene.onRestart = () => this.transitionTo(GameState.GAMEPLAY);
   }

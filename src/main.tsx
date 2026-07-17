@@ -13,7 +13,7 @@ function App() {
   const gameLoopRef = useRef<GameLoop | null>(null);
   const [gameState, setGameState] = useState<GameState>(GameState.START);
   const [score, setScore] = useState(0);
-  const [lives] = useState(3);
+  const [lives, setLives] = useState(3);
 
   useEffect(() => {
     const app = new Application();
@@ -31,6 +31,7 @@ function App() {
       gameLoopRef.current = gameLoop;
 
       gameLoop.onStateChange = (state: GameState) => setGameState(state);
+      gameLoop.onLivesChange = (l: number) => setLives(l);
       gameLoop.onScoreUpdate = (s: number) => setScore(s);
 
       gameLoop.start();
@@ -47,6 +48,7 @@ function App() {
 
   const handleRestart = () => {
     setScore(0);
+    setLives(3);
     gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
   };
 

@@ -68,6 +68,11 @@ export class PlayerEntity implements IPlayerEntity {
     this.collision.bounds.y = this.container.y - halfH;
   }
 
+  resetPosition(x: number, y: number): void {
+    this.container.x = x;
+    this.container.y = y;
+  }
+
   destroy(): void {
     this.input.destroy();
     this.container.removeChildren();

@@ -13,6 +13,8 @@
    - **KHÔNG dùng:** Vue, Angular, hay UI framework nào khác ngoài React
 
 2. **Cấu trúc thư mục bắt buộc** — KHÔNG tự ý tạo thư mục ngoài cấu trúc này:
+
+```text
 src/
 ├── core/         # Game loop, FSM (Finite State Machine)
 ├── scenes/       # StartScene, GameplayScene, GameOverScene
@@ -20,6 +22,7 @@ src/
 ├── components/   # MovementComponent, CollisionComponent, InputComponent
 ├── data/         # levelData.json — cấu hình level
 └── utils/        # ObjectPool, helpers
+```
 
 3. **Level Data:** Mọi config level (tốc độ, mật độ giao thông, địa danh) BẮT BUỘC đọc từ `levelData.json`. KHÔNG hardcode giá trị trong code.
 
@@ -110,7 +113,7 @@ let state = "start";
 
 1. Mỗi level map với 1 địa danh Đà Nẵng thực tế.
 2. Độ khó tăng theo `rushHourTimer` — KHÔNG hardcode difficulty.
-3. Địa danh hiện tại: `Phạm Văn Đồng`, `Ngã tư Mẹ Nhu`, `Cầu Rồng`.
+3. Địa danh hiện tại: `Phạm Văn Đồng`, `Ngã tư Ngô Quyền`, `Cầu Rồng`.
 4. Thêm địa danh mới (Hội An, Huế...) chỉ cần thêm vào `levelData.json` — KHÔNG sửa engine.
 
 ---

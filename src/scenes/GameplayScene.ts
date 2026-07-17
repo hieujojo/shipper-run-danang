@@ -1,14 +1,12 @@
 import { Application, Container, Graphics } from "pixi.js";
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../core/constants";
+import { CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT } from "../core/constants";
 import { PlayerEntity } from "../entities/PlayerEntity";
 
 export class GameplayScene {
   container: Container;
-  private app: Application;
   private player!: PlayerEntity;
 
-  constructor(app: Application) {
-    this.app = app;
+  constructor(_app: Application) {
     this.container = new Container();
   }
 
@@ -21,11 +19,24 @@ export class GameplayScene {
     bg.fill(0x1a1a2e);
     this.container.addChild(bg);
 
-    // Road
+    // Road background
     const road = new Graphics();
     road.rect(CANVAS_WIDTH * 0.2, 0, CANVAS_WIDTH * 0.6, CANVAS_HEIGHT);
     road.fill(0x2d2d2d);
     this.container.addChild(road);
+
+    // Lane dividers
+    const laneWidth = (CANVAS_WIDTH * 0.6) / LANE_COUNT;
+    for (let i = 1; i < LANE_COUNT; i++) {
+      const divider = new Graphics();
+      const x = CANVAS_WIDTH * 0.2 + laneWidth * i;
+      for (let y = 0; y < CANVAS_HEIGHT; y += 40) {
+        divider.rect(x - 2, y, 4, 20);
+      }
+      divider.fill(0xffffff);
+      divider.alpha = 0.3;
+      this.container.addChild(divider);
+    }
 
     // Player
     this.player = new PlayerEntity();

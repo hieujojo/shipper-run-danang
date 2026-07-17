@@ -1,13 +1,30 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>shipper-run-danang</title>
+    <title>Shipper Run Đà Nẵng</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #0a0a0a;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+      #game-container canvas {
+        display: block;
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="game-container"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

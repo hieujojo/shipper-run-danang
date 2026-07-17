@@ -1,0 +1,31 @@
+{
+  "levels": [
+    {
+      "id": 1,
+      "name": "Đại lộ Phạm Văn Đồng",
+      "difficulty": "low",
+      "laneCount": 4,
+      "baseSpeed": 3,
+      "trafficDensity": 0.3,
+      "rushHourMultiplier": 1.5
+    },
+    {
+      "id": 2,
+      "name": "Ngã tư Ngô Quyền",
+      "difficulty": "high",
+      "laneCount": 3,
+      "baseSpeed": 5,
+      "trafficDensity": 0.7,
+      "rushHourMultiplier": 2.0
+    },
+    {
+      "id": 3,
+      "name": "Cầu Rồng",
+      "difficulty": "event",
+      "laneCount": 3,
+      "baseSpeed": 6,
+      "trafficDensity": 0.6,
+      "rushHourMultiplier": 2.5
+    }
+  ]
+}

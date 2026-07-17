@@ -20,7 +20,7 @@ export class GameLoop {
   }
 
   start(): void {
-    this.loadScene(GameState.START);
+    this.loadScene(GameState.GAMEPLAY);
     this.app.ticker.add(this.update.bind(this));
   }
 

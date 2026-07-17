@@ -10,6 +10,11 @@ export class GameLoop {
   private startScene: StartScene;
   private gameplayScene: GameplayScene;
   private gameOverScene: GameOverScene;
+  private scoreTimer: number = 0;
+  private score: number = 0;
+
+  onStateChange: ((state: GameState) => void) | null = null;
+  onScoreUpdate: ((score: number) => void) | null = null;
 
   constructor(app: Application) {
     this.app = app;
@@ -18,24 +23,32 @@ export class GameLoop {
     this.gameplayScene = new GameplayScene(app);
     this.gameOverScene = new GameOverScene(app);
 
-    // Callbacks
     this.gameplayScene.onGameOver = () => this.transitionTo(GameState.GAME_OVER);
     this.startScene.onStart = () => this.transitionTo(GameState.GAMEPLAY);
     this.gameOverScene.onRestart = () => this.transitionTo(GameState.GAMEPLAY);
   }
 
   start(): void {
-    this.loadScene(GameState.GAMEPLAY);
+    this.loadScene(GameState.START);
     this.app.ticker.add(this.update.bind(this));
   }
 
   private update(ticker: { deltaTime: number }): void {
-    switch (this.stateManager.getState()) {
+    const state = this.stateManager.getState();
+
+    switch (state) {
       case GameState.START:
         this.startScene.update(ticker.deltaTime);
         break;
       case GameState.GAMEPLAY:
         this.gameplayScene.update(ticker.deltaTime);
+        // Score tăng theo thời gian
+        this.scoreTimer++;
+        if (this.scoreTimer >= 60) {
+          this.scoreTimer = 0;
+          this.score += 10;
+          this.onScoreUpdate?.(this.score);
+        }
         break;
       case GameState.GAME_OVER:
         this.gameOverScene.update(ticker.deltaTime);
@@ -43,9 +56,20 @@ export class GameLoop {
     }
   }
 
+  transitionTo(state: GameState): void {
+    if (state === GameState.GAMEPLAY) {
+      this.score = 0;
+      this.scoreTimer = 0;
+      this.onScoreUpdate?.(0);
+    }
+    this.loadScene(state);
+  }
+
   private loadScene(state: GameState): void {
     this.app.stage.removeChildren();
     this.stateManager.setState(state);
+    this.onStateChange?.(state);
+
     switch (state) {
       case GameState.START:
         this.startScene.init();
@@ -60,9 +84,5 @@ export class GameLoop {
         this.app.stage.addChild(this.gameOverScene.container);
         break;
     }
-  }
-
-  transitionTo(state: GameState): void {
-    this.loadScene(state);
   }
 }

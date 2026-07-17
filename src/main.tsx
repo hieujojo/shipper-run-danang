@@ -1,21 +1,72 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
 import { Application } from "pixi.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./core/constants";
 import { GameLoop } from "./core/GameLoop";
+import { GameState } from "./core/GameState";
+import { useState, useEffect, useRef } from "react";
+import { StartScreen } from "./ui/StartScreen";
+import { HudOverlay } from "./ui/HudOverlay";
+import { GameOverScreen } from "./ui/GameOverScreen";
 
-async function main(): Promise<void> {
-  const app = new Application();
+function App() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const gameLoopRef = useRef<GameLoop | null>(null);
+  const [gameState, setGameState] = useState<GameState>(GameState.START);
+  const [score, setScore] = useState(0);
+  const [lives] = useState(3);
 
-  await app.init({
-    width: CANVAS_WIDTH,
-    height: CANVAS_HEIGHT,
-    backgroundColor: 0x1a1a2e,
-    antialias: true,
-  });
+  useEffect(() => {
+    const app = new Application();
+    app.init({
+      width: CANVAS_WIDTH,
+      height: CANVAS_HEIGHT,
+      backgroundColor: 0x1a1a2e,
+      antialias: true,
+    }).then(() => {
+      if (containerRef.current) {
+        containerRef.current.appendChild(app.canvas);
+      }
 
-  document.getElementById("game-container")!.appendChild(app.canvas);
+      const gameLoop = new GameLoop(app);
+      gameLoopRef.current = gameLoop;
 
-  const gameLoop = new GameLoop(app);
-  gameLoop.start();
+      gameLoop.onStateChange = (state: GameState) => setGameState(state);
+      gameLoop.onScoreUpdate = (s: number) => setScore(s);
+
+      gameLoop.start();
+    });
+
+    return () => {
+      app.destroy(true);
+    };
+  }, []);
+
+  const handleStart = () => {
+    gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
+  };
+
+  const handleRestart = () => {
+    setScore(0);
+    gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
+  };
+
+  return (
+    <div style={{ position: "relative", display: "inline-block" }}>
+      <div ref={containerRef} />
+      {gameState === GameState.START && (
+        <StartScreen onStart={handleStart} />
+      )}
+      {gameState === GameState.GAMEPLAY && (
+        <HudOverlay score={score} lives={lives} />
+      )}
+      {gameState === GameState.GAME_OVER && (
+        <GameOverScreen score={score} onRestart={handleRestart} />
+      )}
+    </div>
+  );
 }
 
-main();
+createRoot(document.getElementById("root")!).render(
+    <App />
+);

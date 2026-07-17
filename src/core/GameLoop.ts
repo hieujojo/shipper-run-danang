@@ -17,6 +17,11 @@ export class GameLoop {
     this.startScene = new StartScene(app);
     this.gameplayScene = new GameplayScene(app);
     this.gameOverScene = new GameOverScene(app);
+
+    // Callbacks
+    this.gameplayScene.onGameOver = () => this.transitionTo(GameState.GAME_OVER);
+    this.startScene.onStart = () => this.transitionTo(GameState.GAMEPLAY);
+    this.gameOverScene.onRestart = () => this.transitionTo(GameState.GAMEPLAY);
   }
 
   start(): void {
@@ -25,8 +30,7 @@ export class GameLoop {
   }
 
   private update(ticker: { deltaTime: number }): void {
-    const state = this.stateManager.getState();
-    switch (state) {
+    switch (this.stateManager.getState()) {
       case GameState.START:
         this.startScene.update(ticker.deltaTime);
         break;

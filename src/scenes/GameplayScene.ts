@@ -12,6 +12,7 @@ export class GameplayScene {
   private spawnTimer: number = 0;
   private laneWidth: number = 0;
   private lanePositions: number[] = [];
+  onGameOver: (() => void) | null = null;
 
   constructor(_app: unknown) {
     this.container = new Container();
@@ -84,7 +85,8 @@ export class GameplayScene {
 
       // Check collision
       if (this.player.collision.checkCollision(vehicle.collision.bounds)) {
-        console.log("COLLISION!");
+        this.onGameOver?.();
+        return;
       }
 
       // Return to pool if off screen

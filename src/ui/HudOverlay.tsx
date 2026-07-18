@@ -4,9 +4,10 @@ import { audioManager } from "../utils/audioManager";
 interface HudOverlayProps {
   score: number;
   lives: number;
+  hasPackage: boolean;
 }
 
-export function HudOverlay({ score, lives }: HudOverlayProps) {
+export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
 
@@ -35,6 +36,25 @@ export function HudOverlay({ score, lives }: HudOverlayProps) {
       fontFamily: "sans-serif",
       pointerEvents: "none",
     }}>
+      {/* Trạng thái giao hàng */}
+      {hasPackage && (
+        <div style={{
+          position: "absolute",
+          bottom: 12,
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "rgba(243,156,18,0.9)",
+          color: "white",
+          padding: "6px 16px",
+          borderRadius: 20,
+          fontSize: 13,
+          fontWeight: "bold",
+          pointerEvents: "none",
+          whiteSpace: "nowrap",
+        }}>
+          📦 Đang giao hàng — tìm điểm 🟢
+        </div>
+      )}
       {/* Điểm */}
       <div style={{
         background: "rgba(0,0,0,0.6)",

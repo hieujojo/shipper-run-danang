@@ -16,6 +16,7 @@ export class GameLoop {
   onStateChange: ((state: GameState) => void) | null = null;
   onScoreUpdate: ((score: number) => void) | null = null;
   onLevelChange: ((levelName: string) => void) | null = null;
+  onPackageChange: ((hasPackage: boolean) => void) | null = null;
   onLivesChange: ((lives: number) => void) | null = null;
   private levelTimer: number = 0;
   private currentLevelIndex: number = 0;
@@ -29,6 +30,7 @@ export class GameLoop {
 
     this.gameplayScene.onGameOver = () => this.transitionTo(GameState.GAME_OVER);
     this.gameplayScene.onLivesChange = (l: number) => this.onLivesChange?.(l);
+    this.gameplayScene.onPackageChange = (val: boolean) => this.onPackageChange?.(val);
     this.gameplayScene.onScoreDelivery = (bonus: number) => {
       this.score += bonus;
       this.onScoreUpdate?.(this.score);

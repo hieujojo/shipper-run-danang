@@ -30,6 +30,7 @@ export class GameplayScene {
   private deliveryTimer: number = 0;
   private readonly DELIVERY_INTERVAL = 300; // frames
   onScoreDelivery: ((bonus: number) => void) | null = null;
+  onPackageChange: ((hasPackage: boolean) => void) | null = null;
   // Speed scaling (Subway Surfers style)
   private elapsedTime: number = 0;
   private speedMultiplier: number = INITIAL_MULTIPLIER;
@@ -154,6 +155,7 @@ export class GameplayScene {
         this.package.reset();
         audioManager.playCoin();
         this.spawnDeliveryPoint();
+        this.onPackageChange?.(true);
       }
     }
 
@@ -166,6 +168,7 @@ export class GameplayScene {
         this.onScoreDelivery?.(100);
         // Spawn package mới sau 1 lúc
         this.deliveryTimer = 0;
+        this.onPackageChange?.(false);
       }
     }
 

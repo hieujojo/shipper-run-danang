@@ -16,6 +16,7 @@ function App() {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
   const [landmark, setLandmark] = useState("");
+  const [hasPackage, setHasPackage] = useState(false);
   const [landmarkVisible, setLandmarkVisible] = useState(false);
 
   useEffect(() => {
@@ -35,6 +36,7 @@ function App() {
 
       gameLoop.onStateChange = (state: GameState) => setGameState(state);
       gameLoop.onLivesChange = (l: number) => setLives(l);
+      gameLoop.onPackageChange = (val: boolean) => setHasPackage(val);
       gameLoop.onLevelChange = (name: string) => {
         setLandmark(name);
         setLandmarkVisible(true);
@@ -68,7 +70,7 @@ function App() {
       )}
       {gameState === GameState.GAMEPLAY && (
         <>
-          <HudOverlay score={score} lives={lives} />
+          <HudOverlay score={score} lives={lives} hasPackage={hasPackage} />
           <LandmarkBanner name={landmark} visible={landmarkVisible} />
         </>
       )}

@@ -19,8 +19,21 @@ export class StartScene {
     bg.fill(0x1a1a2e);
     this.container.addChild(bg);
 
+    // Vỉa hè trên
+    const sidewalkTop = new Graphics();
+    sidewalkTop.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT * 0.2);
+    sidewalkTop.fill(0x3d3d5c);
+    this.container.addChild(sidewalkTop);
+
+    // Vỉa hè dưới
+    const sidewalkBottom = new Graphics();
+    sidewalkBottom.rect(0, CANVAS_HEIGHT * 0.8, CANVAS_WIDTH, CANVAS_HEIGHT * 0.2);
+    sidewalkBottom.fill(0x3d3d5c);
+    this.container.addChild(sidewalkBottom);
+
+    // Road (phần giữa)
     const road = new Graphics();
-    road.rect(CANVAS_WIDTH * 0.2, 0, CANVAS_WIDTH * 0.6, CANVAS_HEIGHT);
+    road.rect(0, CANVAS_HEIGHT * 0.2, CANVAS_WIDTH, CANVAS_HEIGHT * 0.6);
     road.fill(0x2d2d2d);
     this.container.addChild(road);
     audioManager.playBGM();

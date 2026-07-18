@@ -1,5 +1,5 @@
 import { createRoot } from "react-dom/client";
-import { Application } from "pixi.js";
+import { Application, Assets } from "pixi.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./core/constants";
 import { GameLoop } from "./core/GameLoop";
 import { GameState } from "./core/GameState";
@@ -22,14 +22,28 @@ function App() {
 
   useEffect(() => {
     const app = new Application();
-    app.init({
-      width: CANVAS_WIDTH,
-      height: CANVAS_HEIGHT,
-      backgroundColor: 0x1a1a2e,
-      antialias: true,
-    }).then(() => {
+    (async () => {
+      await app.init({
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+        backgroundColor: 0x000000,
+        resolution: window.devicePixelRatio || 1,
+        autoDensity: true,
+      });
+
+      // Tải trước các ảnh Pixel Art
+      await Assets.load([
+        "/assets/player_shipper.png",
+        "/assets/vehicle_car.png",
+        "/assets/package_box.png"
+      ]);
+
       if (containerRef.current) {
-        containerRef.current.appendChild(app.canvas);
+        const canvas = app.canvas as HTMLCanvasElement;
+        canvas.style.width = "100vw";
+        canvas.style.height = "100vh";
+        canvas.style.objectFit = "contain";
+        containerRef.current.appendChild(canvas);
       }
 
       const gameLoop = new GameLoop(app);
@@ -46,7 +60,7 @@ function App() {
       gameLoop.onScoreUpdate = (s: number) => setScore(s);
 
       gameLoop.start();
-    });
+    })();
 
     return () => {
       app.destroy(true);
@@ -64,8 +78,8 @@ function App() {
   };
 
   return (
-    <div style={{ position: "relative", display: "inline-block" }}>
-      <div ref={containerRef} />
+    <div style={{ position: "relative", width: "100vw", height: "100vh", backgroundColor: "#000", overflow: "hidden" }}>
+      <div ref={containerRef} style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }} />
       {gameState === GameState.START && (
         <StartScreen onStart={handleStart} />
       )}

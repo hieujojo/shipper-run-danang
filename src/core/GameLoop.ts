@@ -45,33 +45,40 @@ export class GameLoop {
   }
 
   private update(ticker: { deltaTime: number }): void {
-    const state = this.stateManager.getState();
+    try {
+      const state = this.stateManager.getState();
 
-    switch (state) {
-      case GameState.START:
-        this.startScene.update(ticker.deltaTime);
-        break;
-      case GameState.GAMEPLAY:
-        this.gameplayScene.update(ticker.deltaTime);
-        // Score tăng theo thời gian
-        this.scoreTimer++;
-        if (this.scoreTimer >= 60) {
-          this.scoreTimer = 0;
-          this.score += 10;
-          this.onScoreUpdate?.(this.score);
-        }
-        // Level progression
-        this.levelTimer++;
-        if (this.levelTimer >= this.LEVEL_DURATION) {
-          this.levelTimer = 0;
-          this.currentLevelIndex = (this.currentLevelIndex + 1) % 3;
-          const levelNames = ["Đại lộ Phạm Văn Đồng", "Ngã tư Ngô Quyền", "Cầu Rồng"];
-          this.onLevelChange?.(levelNames[this.currentLevelIndex]);
-        }
-        break;
-      case GameState.GAME_OVER:
-        this.gameOverScene.update(ticker.deltaTime);
-        break;
+      switch (state) {
+        case GameState.START:
+          this.startScene.update(ticker.deltaTime);
+          break;
+        case GameState.GAMEPLAY:
+          this.gameplayScene.update(ticker.deltaTime);
+          // Score tăng theo thời gian
+          this.scoreTimer++;
+          if (this.scoreTimer >= 60) {
+            this.scoreTimer = 0;
+            this.score += 10;
+            this.onScoreUpdate?.(this.score);
+          }
+          // Level progression
+          this.levelTimer++;
+          if (this.levelTimer >= this.LEVEL_DURATION) {
+            this.levelTimer = 0;
+            this.currentLevelIndex = (this.currentLevelIndex + 1) % 3;
+            const levelNames = ["Đại lộ Phạm Văn Đồng", "Ngã tư Ngô Quyền", "Cầu Rồng"];
+            this.onLevelChange?.(levelNames[this.currentLevelIndex]);
+          }
+          break;
+        case GameState.GAME_OVER:
+          this.gameOverScene.update(ticker.deltaTime);
+          break;
+      }
+    } catch (err: any) {
+      console.error("Lỗi trong vòng lặp GameLoop:", err);
+      // Dừng ticker để tránh văng log liên tục
+      this.app.ticker.stop();
+      alert("Lỗi game: " + err.message + "\nXem Console để biết thêm chi tiết.");
     }
   }
 

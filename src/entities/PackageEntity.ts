@@ -1,4 +1,4 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Sprite, Texture } from "pixi.js";
 import { CollisionComponent } from "../components/CollisionComponent";
 
 const PACKAGE_SIZE = 20;
@@ -8,9 +8,17 @@ export class PackageEntity {
   collision: CollisionComponent;
   active: boolean = false;
 
+  private sprite: Sprite;
+
   constructor() {
     this.container = new Container();
+    this.sprite = new Sprite(Texture.from("/assets/package_box.png"));
+    this.sprite.anchor.set(0.5);
+    this.sprite.width = PACKAGE_SIZE * 1.5;
+    this.sprite.height = PACKAGE_SIZE * 1.5;
+    
     this.collision = new CollisionComponent(0, 0, PACKAGE_SIZE, PACKAGE_SIZE);
+    this.container.addChild(this.sprite);
   }
 
   init(x: number, y: number): void {
@@ -19,18 +27,6 @@ export class PackageEntity {
     this.container.y = y;
     this.container.visible = true;
 
-    const g = new Graphics();
-    // Hộp hàng
-    g.rect(-PACKAGE_SIZE / 2, -PACKAGE_SIZE / 2, PACKAGE_SIZE, PACKAGE_SIZE);
-    g.fill(0xf39c12);
-    // Dây buộc ngang
-    g.rect(-PACKAGE_SIZE / 2, -2, PACKAGE_SIZE, 4);
-    g.fill(0xe74c3c);
-    // Dây buộc dọc
-    g.rect(-2, -PACKAGE_SIZE / 2, 4, PACKAGE_SIZE);
-    g.fill(0xe74c3c);
-
-    this.container.addChild(g);
     this.syncBounds();
   }
 
@@ -42,6 +38,5 @@ export class PackageEntity {
   reset(): void {
     this.active = false;
     this.container.visible = false;
-    this.container.removeChildren();
   }
 }

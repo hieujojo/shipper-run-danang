@@ -2,7 +2,7 @@ import { Container, Graphics } from "pixi.js";
 import {
   CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT, SPAWN_INTERVAL, TARGET_FPS,
   BASE_SCROLL_SPEED, INITIAL_MULTIPLIER, SPEED_INCREASE_RATE, MAX_SPEED_MULTIPLIER,
-  MIN_VEHICLE_SPEED, MAX_VEHICLE_SPEED, PLAYER_HEIGHT
+  MIN_VEHICLE_SPEED, MAX_VEHICLE_SPEED, PLAYER_WIDTH
 } from "../core/constants";
 import { PlayerEntity } from "../entities/PlayerEntity";
 import { VehicleEntity } from "../entities/VehicleEntity";
@@ -30,7 +30,7 @@ export class GameplayScene {
   private deliveryPoint: DeliveryPointEntity | null = null;
   private hasPackage: boolean = false;
   private deliveryTimer: number = 0;
-  private readonly DELIVERY_INTERVAL = 300; // frames
+  private readonly DELIVERY_INTERVAL = 120; // frames (rút ngắn lại để ra nhanh hơn)
   onScoreDelivery: ((bonus: number) => void) | null = null;
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
   private particles!: ParticleSystem;
@@ -65,9 +65,7 @@ export class GameplayScene {
     this.deliveryTimer = 0;
     this.package = new PackageEntity();
     this.deliveryPoint = new DeliveryPointEntity();
-    this.spawnPackage();
-    this.container.addChild(this.deliveryPoint.container);
-    this.container.addChild(this.package.container);
+    
     // Đọc config tốc độ từ levelData (level 1 mặc định)
     const levelCfg = levelData.levels[0];
     this.initialMultiplier = levelCfg.initialMultiplier;
@@ -77,9 +75,10 @@ export class GameplayScene {
     this.elapsedTime = 0;
     this.roadOffset = 0;
 
-    this.laneWidth = (CANVAS_WIDTH * 0.6) / LANE_COUNT;
+    // Chiều rộng mỗi làn theo trục Y
+    this.laneWidth = (CANVAS_HEIGHT * 0.6) / LANE_COUNT;
     this.lanePositions = Array.from({ length: LANE_COUNT }, (_, i) =>
-      CANVAS_WIDTH * 0.2 + this.laneWidth * i + this.laneWidth / 2
+      CANVAS_HEIGHT * 0.2 + this.laneWidth * i + this.laneWidth / 2
     );
 
     this.baseEnvironment = new Container();
@@ -91,21 +90,21 @@ export class GameplayScene {
     bg.fill(0x1a1a2e);
     this.baseEnvironment.addChild(bg);
 
-    // Vỉa hè trái
-    const sidewalkLeft = new Graphics();
-    sidewalkLeft.rect(0, 0, CANVAS_WIDTH * 0.2, CANVAS_HEIGHT);
-    sidewalkLeft.fill(0x3d3d5c);
-    this.baseEnvironment.addChild(sidewalkLeft);
+    // Vỉa hè trên
+    const sidewalkTop = new Graphics();
+    sidewalkTop.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT * 0.2);
+    sidewalkTop.fill(0x3d3d5c);
+    this.baseEnvironment.addChild(sidewalkTop);
 
-    // Vỉa hè phải
-    const sidewalkRight = new Graphics();
-    sidewalkRight.rect(CANVAS_WIDTH * 0.8, 0, CANVAS_WIDTH * 0.2, CANVAS_HEIGHT);
-    sidewalkRight.fill(0x3d3d5c);
-    this.baseEnvironment.addChild(sidewalkRight);
+    // Vỉa hè dưới
+    const sidewalkBottom = new Graphics();
+    sidewalkBottom.rect(0, CANVAS_HEIGHT * 0.8, CANVAS_WIDTH, CANVAS_HEIGHT * 0.2);
+    sidewalkBottom.fill(0x3d3d5c);
+    this.baseEnvironment.addChild(sidewalkBottom);
 
     // Road
     const road = new Graphics();
-    road.rect(CANVAS_WIDTH * 0.2, 0, CANVAS_WIDTH * 0.6, CANVAS_HEIGHT);
+    road.rect(0, CANVAS_HEIGHT * 0.2, CANVAS_WIDTH, CANVAS_HEIGHT * 0.6);
     road.fill(0x2d2d2d);
     this.baseEnvironment.addChild(road);
 
@@ -126,7 +125,7 @@ export class GameplayScene {
         this.container.addChild(v.container);
         return v;
       },
-      (v) => v.reset(),
+      (v) => v.reset(0, 0, 0), // fake reset to clear state
       6
     );
 
@@ -134,19 +133,22 @@ export class GameplayScene {
     this.container.addChild(this.deliveryPoint.container);
     this.container.addChild(this.package.container);
 
+    this.spawnPackage();
+
     // Player (render trên cùng)
     this.player = new PlayerEntity();
-    this.player.init(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.8);
+    this.player.init(CANVAS_WIDTH * 0.2, CANVAS_HEIGHT / 2); // Cố định ở 20% màn hình bên trái
     this.container.addChild(this.player.container);
+    
     // Particle system (render trên cùng nhất)
     this.particles = new ParticleSystem();
     this.container.addChild(this.particles.container);
+    
     // Dragon event
     this.dragonEvent = new DragonEventScene();
     this.isDragonEvent = false;
     this.dragonEventTimer = 0;
     this.speedOverride = 1.0;
-    this.spawnPackage();
   }
 
   private startDragonEvent(): void {
@@ -163,7 +165,6 @@ export class GameplayScene {
       this.speedOverride = m;
     };
     this.dragonEvent.onVisibilityChange = (a: number) => {
-      // Làm mờ container game khi rồng thở
       this.container.alpha = a;
     };
   }
@@ -179,26 +180,31 @@ export class GameplayScene {
   private spawnPackage(): void {
     if (!this.package) return;
     const lane = Math.floor(Math.random() * LANE_COUNT);
-    const x = this.lanePositions[lane];
-    const y = Math.random() * (CANVAS_HEIGHT * 0.5) + CANVAS_HEIGHT * 0.1;
+    const y = this.lanePositions[lane];
+    const x = CANVAS_WIDTH + 100; // Xuất hiện bên ngoài màn hình bên phải
     this.package.init(x, y);
   }
 
   private spawnDeliveryPoint(): void {
     if (!this.deliveryPoint) return;
     const lane = Math.floor(Math.random() * LANE_COUNT);
-    const x = this.lanePositions[lane];
-    const y = Math.random() * (CANVAS_HEIGHT * 0.4) + CANVAS_HEIGHT * 0.1;
+    const y = this.lanePositions[lane];
+    const x = CANVAS_WIDTH + 100;
     this.deliveryPoint.init(x, y);
   }
 
-  private updateDelivery(_deltaTime: number): void {
-    void _deltaTime;
+  private updateDelivery(deltaTime: number): void {
     if (!this.package || !this.deliveryPoint) return;
+    
+    const envSpeed = BASE_SCROLL_SPEED * this.speedMultiplier * this.speedOverride * deltaTime;
 
+    // Cuộn package từ phải sang trái
     if (!this.hasPackage && this.package.active) {
-      // Check nhặt package
-      if (this.player.collision.checkCollision(this.package.collision.bounds)) {
+      this.package.container.x -= envSpeed;
+      if (this.package.container.x < -100) {
+        this.package.reset(); // Đi quá biên trái -> respawn
+        this.spawnPackage();
+      } else if (this.player.collision.checkCollision(this.package.collision.bounds)) {
         this.hasPackage = true;
         this.package.reset();
         audioManager.playCoin();
@@ -208,15 +214,18 @@ export class GameplayScene {
       }
     }
 
+    // Cuộn điểm giao hàng từ phải sang trái
     if (this.hasPackage && this.deliveryPoint.active) {
-      // Check giao hàng
-      if (this.player.collision.checkCollision(this.deliveryPoint.collision.bounds)) {
+      this.deliveryPoint.container.x -= envSpeed;
+      if (this.deliveryPoint.container.x < -100) {
+        this.deliveryPoint.reset(); // Đi quá biên trái -> respawn
+        this.spawnDeliveryPoint();
+      } else if (this.player.collision.checkCollision(this.deliveryPoint.collision.bounds)) {
         this.hasPackage = false;
         this.deliveryPoint.reset();
         audioManager.playCoin();
         this.onScoreDelivery?.(100);
         this.particles.emitDelivery(this.player.container.x, this.player.container.y);
-        // Spawn package mới sau 1 lúc
         this.deliveryTimer = 0;
         this.onPackageChange?.(false);
       }
@@ -224,7 +233,7 @@ export class GameplayScene {
 
     // Spawn package mới sau khi giao xong
     if (!this.hasPackage && !this.package?.active) {
-      this.deliveryTimer++;
+      this.deliveryTimer += deltaTime;
       if (this.deliveryTimer >= this.DELIVERY_INTERVAL) {
         this.deliveryTimer = 0;
         this.spawnPackage();
@@ -237,56 +246,54 @@ export class GameplayScene {
     const buildingColors = [0x4a4a6a, 0x5a3a5a, 0x3a5a4a, 0x5a4a3a, 0x3a4a6a];
     const GAP = 8;
 
-    // Tòa nhà bên trái
-    let yLeft = -200;
-    while (yLeft < CANVAS_HEIGHT + 200) {
-      const h = 60 + Math.random() * 100;
-      const w = CANVAS_WIDTH * 0.15;
+    // Tòa nhà dãy trên
+    let xTop = -200;
+    while (xTop < CANVAS_WIDTH + 200) {
+      const w = 60 + Math.random() * 100;
+      const h = CANVAS_HEIGHT * 0.15;
       const color = buildingColors[Math.floor(Math.random() * buildingColors.length)];
       const b = new Graphics();
-      // Thân nhà
-      b.rect(GAP, yLeft, w, h);
+      b.rect(xTop, GAP, w, h);
       b.fill(color);
       // Cửa sổ
-      for (let row = 0; row < Math.floor(h / 20); row++) {
-        for (let col = 0; col < 2; col++) {
-          b.rect(GAP + 8 + col * 18, yLeft + 8 + row * 18, 10, 12);
+      for (let row = 0; row < 2; row++) {
+        for (let col = 0; col < Math.floor(w / 20); col++) {
+          b.rect(xTop + 8 + col * 18, GAP + 8 + row * 18, 10, 12);
           b.fill(Math.random() > 0.4 ? 0xffee88 : 0x2a2a3a);
         }
       }
       this.buildingContainer.addChild(b);
-      yLeft += h + GAP;
+      xTop += w + GAP;
     }
 
-    // Tòa nhà bên phải
-    let yRight = -150;
-    while (yRight < CANVAS_HEIGHT + 200) {
-      const h = 60 + Math.random() * 100;
-      const w = CANVAS_WIDTH * 0.15;
+    // Tòa nhà dãy dưới
+    let xBottom = -150;
+    while (xBottom < CANVAS_WIDTH + 200) {
+      const w = 60 + Math.random() * 100;
+      const h = CANVAS_HEIGHT * 0.15;
       const color = buildingColors[Math.floor(Math.random() * buildingColors.length)];
       const b = new Graphics();
-      // Thân nhà
-      b.rect(CANVAS_WIDTH * 0.8 + GAP, yRight, w, h);
+      b.rect(xBottom, CANVAS_HEIGHT * 0.8 + GAP, w, h);
       b.fill(color);
       // Cửa sổ
-      for (let row = 0; row < Math.floor(h / 20); row++) {
-        for (let col = 0; col < 2; col++) {
-          b.rect(CANVAS_WIDTH * 0.8 + GAP + 8 + col * 18, yRight + 8 + row * 18, 10, 12);
+      for (let row = 0; row < 2; row++) {
+        for (let col = 0; col < Math.floor(w / 20); col++) {
+          b.rect(xBottom + 8 + col * 18, CANVAS_HEIGHT * 0.8 + GAP + 8 + row * 18, 10, 12);
           b.fill(Math.random() > 0.4 ? 0xffee88 : 0x2a2a3a);
         }
       }
       this.buildingContainer.addChild(b);
-      yRight += h + GAP;
+      xBottom += w + GAP;
     }
   }
 
   private buildRoadMarkings(): void {
     this.roadContainer.removeChildren();
     for (let i = 1; i < LANE_COUNT; i++) {
-      const x = CANVAS_WIDTH * 0.2 + this.laneWidth * i;
-      for (let y = -40; y < CANVAS_HEIGHT + 40; y += 40) {
+      const y = CANVAS_HEIGHT * 0.2 + this.laneWidth * i;
+      for (let x = -40; x < CANVAS_WIDTH + 40; x += 40) {
         const mark = new Graphics();
-        mark.rect(x - 2, y, 4, 20);
+        mark.rect(x, y - 2, 20, 4);
         mark.fill(0xffffff);
         mark.alpha = 0.3;
         this.roadContainer.addChild(mark);
@@ -295,11 +302,11 @@ export class GameplayScene {
   }
 
   update(deltaTime: number): void {
-    const roadLeft = CANVAS_WIDTH * 0.2;
-    const roadRight = CANVAS_WIDTH * 0.8;
-    this.player?.update(deltaTime, roadLeft, roadRight);
+    const roadTop = CANVAS_HEIGHT * 0.2;
+    const roadBottom = CANVAS_HEIGHT * 0.8;
+    this.player?.update(deltaTime, roadTop, roadBottom); // Bây giờ là roadTop, roadBottom để giới hạn trục Y
 
-    // Tăng tốc dần theo thời gian (Subway Surfers style)
+    // Tăng tốc dần theo thời gian
     this.elapsedTime += deltaTime / TARGET_FPS;
     this.speedMultiplier = Math.min(
       this.initialMultiplier + this.elapsedTime * this.speedIncreaseRate,
@@ -308,33 +315,36 @@ export class GameplayScene {
 
     this.updateDelivery(deltaTime);
     this.particles.update(deltaTime);
-    // Dragon event trigger (sau 2 level = 120 giây)
+    
+    // Dragon event trigger
     this.dragonEventTimer += deltaTime;
-    if (!this.isDragonEvent && this.dragonEventTimer >= 5 * 60) {
+    if (!this.isDragonEvent && this.dragonEventTimer >= 120 * 60) {
       this.startDragonEvent();
     }
     if (this.isDragonEvent) {
       this.dragonEvent.update(deltaTime);
       if (this.dragonEventTimer >= 120 * 60 + this.DRAGON_EVENT_DURATION) {
         this.stopDragonEvent();
-        this.dragonEventTimer = 0; // reset
+        this.dragonEventTimer = 0;
       }
     }
 
-    // Scroll đường theo speedMultiplier + dragon override
-    this.roadOffset += BASE_SCROLL_SPEED * this.speedMultiplier * this.speedOverride * deltaTime;
-    // Scroll buildings
-    this.buildingContainer.y = this.roadOffset * 0.6;
-    if (this.buildingContainer.y >= CANVAS_HEIGHT) {
-      this.buildingContainer.y = 0;
+    // Scroll đường (Sang trái -> X giảm)
+    const currentScrollSpeed = BASE_SCROLL_SPEED * this.speedMultiplier * this.speedOverride * deltaTime;
+    this.roadOffset -= currentScrollSpeed;
+    
+    // Scroll buildings chậm hơn đường (parallax)
+    this.buildingContainer.x = this.roadOffset * 0.6;
+    if (this.buildingContainer.x <= -CANVAS_WIDTH) { // Xóa và render lại khi trôi qua hết
+      this.buildingContainer.x = 0;
+      this.roadOffset += CANVAS_WIDTH / 0.6; // Bù đắp lại roadOffset
       this.buildBuildings();
     }
-    if (this.roadOffset >= 40) {
-      this.roadOffset %= 40;
-    }
-    this.roadContainer.y = this.roadOffset;
+    
+    // Scroll road markings
+    this.roadContainer.x = this.roadOffset % 40; // Lặp lại vạch kẻ đường mỗi 40px
 
-    // Spawn vehicles — interval rút ngắn khi tốc độ tăng
+    // Spawn vehicles
     const dynamicInterval = Math.max(20, Math.floor(SPAWN_INTERVAL / this.speedMultiplier));
     this.spawnTimer++;
     if (this.spawnTimer >= dynamicInterval) {
@@ -347,7 +357,7 @@ export class GameplayScene {
       const vehicle = this.activeVehicles[i];
       vehicle.update(deltaTime);
 
-      // Check collision với player
+      // Check collision
       if (this.player.collision.checkCollision(vehicle.collision.bounds)) {
         this.vehiclePool.release(vehicle);
         this.activeVehicles.splice(i, 1);
@@ -355,59 +365,65 @@ export class GameplayScene {
         this.onLivesChange?.(this.lives);
         audioManager.playCrash();
         this.particles.emitCrash(this.player.container.x, this.player.container.y);
+        
         if (this.lives <= 0) {
           audioManager.stopEngine();
           this.onGameOver?.();
           return;
         }
-        this.player.resetPosition(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.8);
+        
+        // Hồi sinh ở 20% bên trái, giữa đường
+        this.player.resetPosition(CANVAS_WIDTH * 0.2, CANVAS_HEIGHT / 2);
         continue;
       }
 
-      // Return to pool if off screen
-      if (vehicle.container.y > CANVAS_HEIGHT + 100) {
+      // Return to pool if off screen (qua trái màn hình)
+      if (vehicle.container.x < -100) {
         this.vehiclePool.release(vehicle);
         this.activeVehicles.splice(i, 1);
       }
     }
 
-    // Giữ khoảng cách cố định giữa các xe cùng lane (Subway Surfers style)
-    // bottom of vehicle = container.y + PLAYER_HEIGHT (50), top = container.y - PLAYER_HEIGHT/2 (25)
-    // → min distance giữa 2 container.y = PLAYER_HEIGHT * 1.5 + MIN_GAP
+    // AI Giữ khoảng cách cố định giữa các xe cùng lane
     const MIN_GAP = 20;
-    const MIN_CENTER_DIST = PLAYER_HEIGHT * 1.5 + MIN_GAP; // 95px
-    const SAME_LANE = 10; // px threshold để xác định cùng lane
+    const MIN_CENTER_DIST = PLAYER_WIDTH * 1.5 + MIN_GAP; // Tính theo chiều X
+    const SAME_LANE = 10;
 
-    // Sort xe theo y tăng dần (thấp trên màn hình trước)
-    this.activeVehicles.sort((a, b) => a.container.y - b.container.y);
+    // Sort xe theo X giảm dần (càng xa bên phải càng đứng trước mảng)
+    this.activeVehicles.sort((a, b) => b.container.x - a.container.x);
 
     for (let i = 0; i < this.activeVehicles.length - 1; i++) {
-      const upper = this.activeVehicles[i];     // xe phía trên (y nhỏ hơn)
-      const lower = this.activeVehicles[i + 1]; // xe phía dưới (y lớn hơn, gần player)
+      const rightVeh = this.activeVehicles[i];     // Xe phía sau (bên phải)
+      const leftVeh = this.activeVehicles[i + 1]; // Xe phía trước (bên trái)
+      
       // Chỉ xét cùng lane
-      if (Math.abs(upper.container.x - lower.container.x) > SAME_LANE) continue;
-      // Nếu xe trên đã quá gần xe dưới, đẩy xe trên lên để giữ khoảng cách
-      if (lower.container.y - upper.container.y < MIN_CENTER_DIST) {
-        upper.container.y = lower.container.y - MIN_CENTER_DIST;
-        upper.collision.bounds.y = upper.container.y - PLAYER_HEIGHT / 2;
+      if (Math.abs(rightVeh.container.y - leftVeh.container.y) > SAME_LANE) continue;
+      
+      // Nếu xe sau tiến quá gần xe trước, đẩy xe sau lùi lại
+      if (rightVeh.container.x - leftVeh.container.x < MIN_CENTER_DIST) {
+        rightVeh.container.x = leftVeh.container.x + MIN_CENTER_DIST;
+        rightVeh.collision.bounds.x = rightVeh.container.x - PLAYER_WIDTH / 2;
       }
     }
   }
 
   private spawnVehicle(): void {
     const lane = Math.floor(Math.random() * LANE_COUNT);
-    const x = this.lanePositions[lane];
+    const y = this.lanePositions[lane];
+    const x = CANVAS_WIDTH + 100;
+    
+    // Speed di chuyển TỪ PHẢI SANG TRÁI -> speed mang dấu âm
     const baseSpeed = MIN_VEHICLE_SPEED + Math.random() * (MAX_VEHICLE_SPEED - MIN_VEHICLE_SPEED);
     const speed = baseSpeed * this.speedMultiplier;
 
-    // Không spawn nếu đã có xe cùng lane còn ở gần đầu màn hình (< 95px kể từ spawn point)
+    // Tránh spawn đè nhau
     const tooClose = this.activeVehicles.some(
-      (v) => Math.abs(v.container.x - x) < 10 && v.container.y < PLAYER_HEIGHT * 1.5 + 20
+      (v) => Math.abs(v.container.y - y) < 10 && Math.abs(v.container.x - x) < PLAYER_WIDTH * 1.5 + 20
     );
     if (tooClose) return;
 
     const vehicle = this.vehiclePool.get();
-    vehicle.init(x, -80, speed);
+    vehicle.init(x, y, -speed); // truyền speed âm
     this.activeVehicles.push(vehicle);
   }
 

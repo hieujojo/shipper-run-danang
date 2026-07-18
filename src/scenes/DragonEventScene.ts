@@ -21,28 +21,28 @@ export class DragonEventScene {
 
     // Cầu Rồng background
     const bridge = new Graphics();
-    // Mặt cầu
-    bridge.rect(CANVAS_WIDTH * 0.15, 0, CANVAS_WIDTH * 0.7, CANVAS_HEIGHT);
+    // Mặt cầu ngang
+    bridge.rect(0, CANVAS_HEIGHT * 0.15, CANVAS_WIDTH, CANVAS_HEIGHT * 0.7);
     bridge.fill(0x5d6d7e);
-    // Lan can trái
-    bridge.rect(CANVAS_WIDTH * 0.15, 0, 15, CANVAS_HEIGHT);
+    // Lan can trên
+    bridge.rect(0, CANVAS_HEIGHT * 0.15, CANVAS_WIDTH, 15);
     bridge.fill(0x85929e);
-    // Lan can phải
-    bridge.rect(CANVAS_WIDTH * 0.75, 0, 15, CANVAS_HEIGHT);
+    // Lan can dưới
+    bridge.rect(0, CANVAS_HEIGHT * 0.85 - 15, CANVAS_WIDTH, 15);
     bridge.fill(0x85929e);
     // Đèn cầu
-    for (let y = 0; y < CANVAS_HEIGHT; y += 80) {
-      bridge.circle(CANVAS_WIDTH * 0.15 + 7, y, 5);
+    for (let x = 0; x < CANVAS_WIDTH; x += 80) {
+      bridge.circle(x, CANVAS_HEIGHT * 0.15 + 7, 5);
       bridge.fill(0xf1c40f);
-      bridge.circle(CANVAS_WIDTH * 0.75 + 7, y, 5);
+      bridge.circle(x, CANVAS_HEIGHT * 0.85 - 7, 5);
       bridge.fill(0xf1c40f);
     }
     // Vạch làn
-    const laneWidth = (CANVAS_WIDTH * 0.6) / LANE_COUNT;
+    const laneWidth = (CANVAS_HEIGHT * 0.6) / LANE_COUNT;
     for (let i = 1; i < LANE_COUNT; i++) {
-      const x = CANVAS_WIDTH * 0.2 + laneWidth * i;
-      for (let y = 0; y < CANVAS_HEIGHT; y += 40) {
-        bridge.rect(x - 2, y, 4, 20);
+      const y = CANVAS_HEIGHT * 0.2 + laneWidth * i;
+      for (let x = 0; x < CANVAS_WIDTH; x += 40) {
+        bridge.rect(x, y - 2, 20, 4);
         bridge.fill(0xffffff);
       }
     }

@@ -9,9 +9,9 @@
 
 ## 🎮 Giới thiệu
 
-**Shipper Run Đà Nẵng** là game đua xe giao hàng thể loại Endless Runner chạy trên trình duyệt web (góc nhìn 2.5D Isometric). Game kết hợp sức mạnh render mượt mà của **PixiJS v8** cho phần gameplay và **React** cho lớp giao diện người dùng (UI Layer).
+**Shipper Run Đà Nẵng** là game đua xe giao hàng thể loại Endless Runner cuộn ngang (Side-scroller) mang phong cách **Pixel Art**, chạy trên trình duyệt web. Game kết hợp sức mạnh render mượt mà của **PixiJS v8** cho phần gameplay và **React** cho lớp giao diện người dùng (UI Layer).
 
-Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn trên các tuyến đường biểu tượng của Đà Nẵng — từ Đại lộ Phạm Văn Đồng đến Cầu Rồng huyền thoại.
+Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn trên các tuyến đường biểu tượng của Đà Nẵng — từ Đại lộ Phạm Văn Đồng đến Cầu Rồng huyền thoại. Mọi asset hình ảnh đều được tối ưu cho cảm giác retro hoài cổ.
 
 ## 🗺️ Địa danh trong game
 
@@ -25,10 +25,9 @@ Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn 
 
 | Phím | Hành động |
 |---|---|
-| `←` `→` | Đổi làn / né xe |
-| `↑` | Nhảy qua chướng ngại thấp |
-| `↓` | Trượt qua chướng ngại cao |
-| `Space` | Phanh gấp / Tăng tốc |
+| `↑` `↓` | Đổi làn (Né xe) |
+| `←` `→` | Phanh lại / Tăng tốc tiến lên |
+| `Space` | Kỹ năng đặc biệt (nếu có) |
 
 ## 🛠️ Tech Stack
 
@@ -37,7 +36,7 @@ Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn 
 - **Build Tool:** Vite 5.x + TypeScript
 - **Audio:** Howler.js
 - **Deploy:** Vercel
-- **Graphics:** PIXI.Graphics (Vector hoàn toàn, không dùng asset ảnh)
+- **Graphics:** PIXI.Sprite (Pixel Art assets) kết hợp PIXI.Graphics
 
 ## 🚀 Chạy local
 

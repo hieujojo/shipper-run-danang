@@ -8,6 +8,7 @@ import { PlayerEntity } from "../entities/PlayerEntity";
 import { VehicleEntity } from "../entities/VehicleEntity";
 import { ObjectPool } from "../utils/objectPool";
 import { audioManager } from "../utils/audioManager";
+import { ParticleSystem } from "../utils/particleSystem";
 import { PackageEntity } from "../entities/PackageEntity";
 import { DeliveryPointEntity } from "../entities/DeliveryPointEntity";
 import levelData from "../data/levelData.json";
@@ -31,6 +32,7 @@ export class GameplayScene {
   private readonly DELIVERY_INTERVAL = 300; // frames
   onScoreDelivery: ((bonus: number) => void) | null = null;
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
+  private particles!: ParticleSystem;
   // Speed scaling (Subway Surfers style)
   private elapsedTime: number = 0;
   private speedMultiplier: number = INITIAL_MULTIPLIER;
@@ -60,12 +62,12 @@ export class GameplayScene {
     this.container.addChild(this.package.container);
     // Đọc config tốc độ từ levelData (level 1 mặc định)
     const levelCfg = levelData.levels[0];
-    this.initialMultiplier  = levelCfg.initialMultiplier;
-    this.speedIncreaseRate  = levelCfg.speedIncreaseRate;
+    this.initialMultiplier = levelCfg.initialMultiplier;
+    this.speedIncreaseRate = levelCfg.speedIncreaseRate;
     this.maxSpeedMultiplier = levelCfg.maxSpeedMultiplier;
-    this.speedMultiplier    = this.initialMultiplier;
-    this.elapsedTime        = 0;
-    this.roadOffset         = 0;
+    this.speedMultiplier = this.initialMultiplier;
+    this.elapsedTime = 0;
+    this.roadOffset = 0;
 
     this.laneWidth = (CANVAS_WIDTH * 0.6) / LANE_COUNT;
     this.lanePositions = Array.from({ length: LANE_COUNT }, (_, i) =>
@@ -125,7 +127,9 @@ export class GameplayScene {
     this.player = new PlayerEntity();
     this.player.init(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.8);
     this.container.addChild(this.player.container);
-
+    // Particle system (render trên cùng nhất)
+    this.particles = new ParticleSystem();
+    this.container.addChild(this.particles.container);
     this.spawnPackage();
   }
 
@@ -155,6 +159,7 @@ export class GameplayScene {
         this.package.reset();
         audioManager.playCoin();
         this.spawnDeliveryPoint();
+        this.particles.emitPickup(this.player.container.x, this.player.container.y);
         this.onPackageChange?.(true);
       }
     }
@@ -166,6 +171,7 @@ export class GameplayScene {
         this.deliveryPoint.reset();
         audioManager.playCoin();
         this.onScoreDelivery?.(100);
+        this.particles.emitDelivery(this.player.container.x, this.player.container.y);
         // Spawn package mới sau 1 lúc
         this.deliveryTimer = 0;
         this.onPackageChange?.(false);
@@ -257,7 +263,8 @@ export class GameplayScene {
     );
 
     this.updateDelivery(deltaTime);
-      
+    this.particles.update(deltaTime);
+
     // Scroll đường theo speedMultiplier
     this.roadOffset += BASE_SCROLL_SPEED * this.speedMultiplier * deltaTime;
     // Scroll buildings
@@ -291,6 +298,7 @@ export class GameplayScene {
         this.lives--;
         this.onLivesChange?.(this.lives);
         audioManager.playCrash();
+        this.particles.emitCrash(this.player.container.x, this.player.container.y);
         if (this.lives <= 0) {
           audioManager.stopEngine();
           this.onGameOver?.();
@@ -349,6 +357,7 @@ export class GameplayScene {
 
   destroy(): void {
     this.player?.destroy();
+    this.particles.clear();
     audioManager.stopEngine();
     this.container.removeChildren();
   }

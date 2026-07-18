@@ -17,6 +17,11 @@ export class PlayerEntity implements IPlayerEntity {
   private _movement: MovementComponent;
   collision: CollisionComponent;
   private input: InputComponent;
+  private boostTimer: number = 0;
+  private readonly BOOST_DURATION = 120;
+  private readonly BOOST_SPEED = 12;
+  private readonly NORMAL_SPEED = 5;
+  private readonly BRAKE_SPEED = 2;
 
   constructor() {
     this.container = new Container();
@@ -44,9 +49,20 @@ export class PlayerEntity implements IPlayerEntity {
     this.container.addChild(this.graphics);
   }
 
-  update(deltaTime: number, roadLeft: number, roadRight: number): void {
+update(deltaTime: number, roadLeft: number, roadRight: number): void {
     const inputState = this.input.getState();
-    const speed = 5;
+
+    // Space: boost trong BOOST_DURATION frame, sau đó brake
+    if (inputState.space && this.boostTimer === 0) {
+      this.boostTimer = this.BOOST_DURATION;
+    }
+    if (this.boostTimer > 0) this.boostTimer--;
+
+    const speed = this.boostTimer > 0
+      ? this.BOOST_SPEED
+      : inputState.space
+        ? this.BRAKE_SPEED
+        : this.NORMAL_SPEED;
 
     if (inputState.left) this.container.x -= speed * deltaTime;
     if (inputState.right) this.container.x += speed * deltaTime;

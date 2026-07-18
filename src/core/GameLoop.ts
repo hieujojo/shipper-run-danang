@@ -15,7 +15,11 @@ export class GameLoop {
 
   onStateChange: ((state: GameState) => void) | null = null;
   onScoreUpdate: ((score: number) => void) | null = null;
+  onLevelChange: ((levelName: string) => void) | null = null;
   onLivesChange: ((lives: number) => void) | null = null;
+  private levelTimer: number = 0;
+  private currentLevelIndex: number = 0;
+  private readonly LEVEL_DURATION = 60 * 60; // 60 giây mỗi level
   constructor(app: Application) {
     this.app = app;
     this.stateManager = new GameStateManager();
@@ -54,6 +58,14 @@ export class GameLoop {
           this.score += 10;
           this.onScoreUpdate?.(this.score);
         }
+        // Level progression
+        this.levelTimer++;
+        if (this.levelTimer >= this.LEVEL_DURATION) {
+          this.levelTimer = 0;
+          this.currentLevelIndex = (this.currentLevelIndex + 1) % 3;
+          const levelNames = ["Đại lộ Phạm Văn Đồng", "Ngã tư Ngô Quyền", "Cầu Rồng"];
+          this.onLevelChange?.(levelNames[this.currentLevelIndex]);
+        }
         break;
       case GameState.GAME_OVER:
         this.gameOverScene.update(ticker.deltaTime);
@@ -63,9 +75,9 @@ export class GameLoop {
 
   transitionTo(state: GameState): void {
     if (state === GameState.GAMEPLAY) {
-      this.score = 0;
-      this.scoreTimer = 0;
-      this.onScoreUpdate?.(0);
+      this.levelTimer = 0;
+      this.currentLevelIndex = 0;
+      this.onLevelChange?.("Đại lộ Phạm Văn Đồng");
     }
     this.loadScene(state);
   }

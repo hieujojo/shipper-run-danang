@@ -5,6 +5,7 @@ import { GameLoop } from "./core/GameLoop";
 import { GameState } from "./core/GameState";
 import { useState, useEffect, useRef } from "react";
 import { StartScreen } from "./ui/StartScreen";
+import { LandmarkBanner } from "./ui/LandmarkBanner";
 import { HudOverlay } from "./ui/HudOverlay";
 import { GameOverScreen } from "./ui/GameOverScreen";
 
@@ -14,6 +15,8 @@ function App() {
   const [gameState, setGameState] = useState<GameState>(GameState.START);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(3);
+  const [landmark, setLandmark] = useState("");
+  const [landmarkVisible, setLandmarkVisible] = useState(false);
 
   useEffect(() => {
     const app = new Application();
@@ -32,6 +35,11 @@ function App() {
 
       gameLoop.onStateChange = (state: GameState) => setGameState(state);
       gameLoop.onLivesChange = (l: number) => setLives(l);
+      gameLoop.onLevelChange = (name: string) => {
+        setLandmark(name);
+        setLandmarkVisible(true);
+        setTimeout(() => setLandmarkVisible(false), 3000);
+      };
       gameLoop.onScoreUpdate = (s: number) => setScore(s);
 
       gameLoop.start();
@@ -59,7 +67,10 @@ function App() {
         <StartScreen onStart={handleStart} />
       )}
       {gameState === GameState.GAMEPLAY && (
-        <HudOverlay score={score} lives={lives} />
+        <>
+          <HudOverlay score={score} lives={lives} />
+          <LandmarkBanner name={landmark} visible={landmarkVisible} />
+        </>
       )}
       {gameState === GameState.GAME_OVER && (
         <GameOverScreen score={score} onRestart={handleRestart} />

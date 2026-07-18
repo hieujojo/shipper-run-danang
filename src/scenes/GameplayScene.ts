@@ -22,6 +22,7 @@ export class GameplayScene {
   private lanePositions: number[] = [];
   private roadMarkings: { y: number }[] = [];
   private roadContainer!: Container;
+  private buildingContainer!: Container;
   private roadOffset: number = 0;
   private package: PackageEntity | null = null;
   private deliveryPoint: DeliveryPointEntity | null = null;
@@ -76,13 +77,30 @@ export class GameplayScene {
     bg.fill(0x1a1a2e);
     this.container.addChild(bg);
 
+    // Vỉa hè trái
+    const sidewalkLeft = new Graphics();
+    sidewalkLeft.rect(0, 0, CANVAS_WIDTH * 0.2, CANVAS_HEIGHT);
+    sidewalkLeft.fill(0x3d3d5c);
+    this.container.addChild(sidewalkLeft);
+
+    // Vỉa hè phải
+    const sidewalkRight = new Graphics();
+    sidewalkRight.rect(CANVAS_WIDTH * 0.8, 0, CANVAS_WIDTH * 0.2, CANVAS_HEIGHT);
+    sidewalkRight.fill(0x3d3d5c);
+    this.container.addChild(sidewalkRight);
+
     // Road
     const road = new Graphics();
     road.rect(CANVAS_WIDTH * 0.2, 0, CANVAS_WIDTH * 0.6, CANVAS_HEIGHT);
     road.fill(0x2d2d2d);
     this.container.addChild(road);
 
-   // Scrolling road container
+    // Scrolling buildings
+    this.buildingContainer = new Container();
+    this.container.addChild(this.buildingContainer);
+    this.buildBuildings();
+
+    // Scrolling road container
     this.roadContainer = new Container();
     this.container.addChild(this.roadContainer);
     this.buildRoadMarkings();
@@ -161,6 +179,54 @@ export class GameplayScene {
     }
   }
 
+  private buildBuildings(): void {
+    this.buildingContainer.removeChildren();
+    const buildingColors = [0x4a4a6a, 0x5a3a5a, 0x3a5a4a, 0x5a4a3a, 0x3a4a6a];
+    const GAP = 8;
+
+    // Tòa nhà bên trái
+    let yLeft = -200;
+    while (yLeft < CANVAS_HEIGHT + 200) {
+      const h = 60 + Math.random() * 100;
+      const w = CANVAS_WIDTH * 0.15;
+      const color = buildingColors[Math.floor(Math.random() * buildingColors.length)];
+      const b = new Graphics();
+      // Thân nhà
+      b.rect(GAP, yLeft, w, h);
+      b.fill(color);
+      // Cửa sổ
+      for (let row = 0; row < Math.floor(h / 20); row++) {
+        for (let col = 0; col < 2; col++) {
+          b.rect(GAP + 8 + col * 18, yLeft + 8 + row * 18, 10, 12);
+          b.fill(Math.random() > 0.4 ? 0xffee88 : 0x2a2a3a);
+        }
+      }
+      this.buildingContainer.addChild(b);
+      yLeft += h + GAP;
+    }
+
+    // Tòa nhà bên phải
+    let yRight = -150;
+    while (yRight < CANVAS_HEIGHT + 200) {
+      const h = 60 + Math.random() * 100;
+      const w = CANVAS_WIDTH * 0.15;
+      const color = buildingColors[Math.floor(Math.random() * buildingColors.length)];
+      const b = new Graphics();
+      // Thân nhà
+      b.rect(CANVAS_WIDTH * 0.8 + GAP, yRight, w, h);
+      b.fill(color);
+      // Cửa sổ
+      for (let row = 0; row < Math.floor(h / 20); row++) {
+        for (let col = 0; col < 2; col++) {
+          b.rect(CANVAS_WIDTH * 0.8 + GAP + 8 + col * 18, yRight + 8 + row * 18, 10, 12);
+          b.fill(Math.random() > 0.4 ? 0xffee88 : 0x2a2a3a);
+        }
+      }
+      this.buildingContainer.addChild(b);
+      yRight += h + GAP;
+    }
+  }
+
   private buildRoadMarkings(): void {
     this.roadContainer.removeChildren();
     for (let i = 1; i < LANE_COUNT; i++) {
@@ -191,6 +257,12 @@ export class GameplayScene {
       
     // Scroll đường theo speedMultiplier
     this.roadOffset += BASE_SCROLL_SPEED * this.speedMultiplier * deltaTime;
+    // Scroll buildings
+    this.buildingContainer.y = this.roadOffset * 0.6;
+    if (this.buildingContainer.y >= CANVAS_HEIGHT) {
+      this.buildingContainer.y = 0;
+      this.buildBuildings();
+    }
     if (this.roadOffset >= 40) {
       this.roadOffset %= 40;
     }

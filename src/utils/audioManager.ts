@@ -12,6 +12,7 @@ class AudioManager implements IAudioManager {
   private engine: Howl;
   private crash: Howl;
   private coin: Howl;
+  private bgm: Howl;
 
   constructor() {
     this.engine = new Howl({
@@ -29,6 +30,22 @@ class AudioManager implements IAudioManager {
       src: ["/sounds/coin.wav"],
       volume: 1,
     });
+
+    this.bgm = new Howl({
+      src: ["/sounds/bgm.wav"],
+      loop: true,
+      volume: 0.1,
+    });
+  }
+
+  playBGM(): void {
+    if (!this.bgm.playing()) {
+      this.bgm.play();
+    }
+  }
+
+  stopBGM(): void {
+    this.bgm.stop();
   }
 
   playEngine(): void {

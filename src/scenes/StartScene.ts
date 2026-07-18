@@ -1,4 +1,5 @@
 import { Container, Graphics } from "pixi.js";
+import { audioManager } from "../utils/audioManager";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../core/constants";
 
 export class StartScene {
@@ -22,6 +23,7 @@ export class StartScene {
     road.rect(CANVAS_WIDTH * 0.2, 0, CANVAS_WIDTH * 0.6, CANVAS_HEIGHT);
     road.fill(0x2d2d2d);
     this.container.addChild(road);
+    audioManager.playBGM();
 
     // Start button area (React sẽ handle UI, đây chỉ là fallback)
     window.addEventListener("keydown", this.onKeyDown.bind(this), { once: true });

@@ -59,6 +59,7 @@ export class GameplayScene {
     this.activeVehicles = [];
     this.spawnTimer = 0;
     this.lives = 3;
+    audioManager.stopBGM();
     audioManager.playEngine();
     this.hasPackage = false;
     this.deliveryTimer = 0;

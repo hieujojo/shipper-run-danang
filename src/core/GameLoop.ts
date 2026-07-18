@@ -25,6 +25,10 @@ export class GameLoop {
 
     this.gameplayScene.onGameOver = () => this.transitionTo(GameState.GAME_OVER);
     this.gameplayScene.onLivesChange = (l: number) => this.onLivesChange?.(l);
+    this.gameplayScene.onScoreDelivery = (bonus: number) => {
+      this.score += bonus;
+      this.onScoreUpdate?.(this.score);
+    };
     this.startScene.onStart = () => this.transitionTo(GameState.GAMEPLAY);
     this.gameOverScene.onRestart = () => this.transitionTo(GameState.GAMEPLAY);
   }

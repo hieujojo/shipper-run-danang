@@ -8,6 +8,8 @@ import { PlayerEntity } from "../entities/PlayerEntity";
 import { VehicleEntity } from "../entities/VehicleEntity";
 import { ObjectPool } from "../utils/objectPool";
 import { audioManager } from "../utils/audioManager";
+import { PackageEntity } from "../entities/PackageEntity";
+import { DeliveryPointEntity } from "../entities/DeliveryPointEntity";
 import levelData from "../data/levelData.json";
 
 export class GameplayScene {
@@ -21,6 +23,12 @@ export class GameplayScene {
   private roadMarkings: { y: number }[] = [];
   private roadContainer!: Container;
   private roadOffset: number = 0;
+  private package: PackageEntity | null = null;
+  private deliveryPoint: DeliveryPointEntity | null = null;
+  private hasPackage: boolean = false;
+  private deliveryTimer: number = 0;
+  private readonly DELIVERY_INTERVAL = 300; // frames
+  onScoreDelivery: ((bonus: number) => void) | null = null;
   // Speed scaling (Subway Surfers style)
   private elapsedTime: number = 0;
   private speedMultiplier: number = INITIAL_MULTIPLIER;
@@ -41,6 +49,13 @@ export class GameplayScene {
     this.spawnTimer = 0;
     this.lives = 3;
     audioManager.playEngine();
+    this.hasPackage = false;
+    this.deliveryTimer = 0;
+    this.package = new PackageEntity();
+    this.deliveryPoint = new DeliveryPointEntity();
+    this.spawnPackage();
+    this.container.addChild(this.deliveryPoint.container);
+    this.container.addChild(this.package.container);
     // Đọc config tốc độ từ levelData (level 1 mặc định)
     const levelCfg = levelData.levels[0];
     this.initialMultiplier  = levelCfg.initialMultiplier;
@@ -83,10 +98,67 @@ export class GameplayScene {
       6
     );
 
-    // Player
+    // Package và delivery point thêm trước player
+    this.container.addChild(this.deliveryPoint.container);
+    this.container.addChild(this.package.container);
+
+    // Player (render trên cùng)
     this.player = new PlayerEntity();
     this.player.init(CANVAS_WIDTH / 2, CANVAS_HEIGHT * 0.8);
     this.container.addChild(this.player.container);
+
+    this.spawnPackage();
+  }
+
+  private spawnPackage(): void {
+    if (!this.package) return;
+    const lane = Math.floor(Math.random() * LANE_COUNT);
+    const x = this.lanePositions[lane];
+    const y = Math.random() * (CANVAS_HEIGHT * 0.5) + CANVAS_HEIGHT * 0.1;
+    this.package.init(x, y);
+  }
+
+  private spawnDeliveryPoint(): void {
+    if (!this.deliveryPoint) return;
+    const lane = Math.floor(Math.random() * LANE_COUNT);
+    const x = this.lanePositions[lane];
+    const y = Math.random() * (CANVAS_HEIGHT * 0.4) + CANVAS_HEIGHT * 0.1;
+    this.deliveryPoint.init(x, y);
+  }
+
+  private updateDelivery(_deltaTime: number): void {
+    if (!this.package || !this.deliveryPoint) return;
+
+    if (!this.hasPackage && this.package.active) {
+      // Check nhặt package
+      if (this.player.collision.checkCollision(this.package.collision.bounds)) {
+        this.hasPackage = true;
+        this.package.reset();
+        audioManager.playCoin();
+        this.spawnDeliveryPoint();
+      }
+    }
+
+    if (this.hasPackage && this.deliveryPoint.active) {
+      // Check giao hàng
+      if (this.player.collision.checkCollision(this.deliveryPoint.collision.bounds)) {
+        this.hasPackage = false;
+        this.deliveryPoint.reset();
+        audioManager.playCoin();
+        this.onScoreDelivery?.(100);
+        // Spawn package mới sau 1 lúc
+        this.deliveryTimer = 0;
+      }
+    }
+
+    // Spawn package mới sau khi giao xong
+    if (!this.hasPackage && !this.package?.active) {
+      this.deliveryTimer++;
+      if (this.deliveryTimer >= this.DELIVERY_INTERVAL) {
+        this.deliveryTimer = 0;
+        this.spawnPackage();
+      }
+    }
   }
 
   private buildRoadMarkings(): void {
@@ -115,6 +187,8 @@ export class GameplayScene {
       this.maxSpeedMultiplier
     );
 
+    this.updateDelivery(deltaTime);
+      
     // Scroll đường theo speedMultiplier
     this.roadOffset += BASE_SCROLL_SPEED * this.speedMultiplier * deltaTime;
     if (this.roadOffset >= 40) {

@@ -7,6 +7,7 @@ import {
 import { PlayerEntity } from "../entities/PlayerEntity";
 import { VehicleEntity } from "../entities/VehicleEntity";
 import { ObjectPool } from "../utils/objectPool";
+import { audioManager } from "../utils/audioManager";
 import levelData from "../data/levelData.json";
 
 export class GameplayScene {
@@ -39,7 +40,7 @@ export class GameplayScene {
     this.activeVehicles = [];
     this.spawnTimer = 0;
     this.lives = 3;
-
+    audioManager.playEngine();
     // Đọc config tốc độ từ levelData (level 1 mặc định)
     const levelCfg = levelData.levels[0];
     this.initialMultiplier  = levelCfg.initialMultiplier;
@@ -140,7 +141,9 @@ export class GameplayScene {
         this.activeVehicles.splice(i, 1);
         this.lives--;
         this.onLivesChange?.(this.lives);
+        audioManager.playCrash();
         if (this.lives <= 0) {
+          audioManager.stopEngine();
           this.onGameOver?.();
           return;
         }
@@ -197,6 +200,7 @@ export class GameplayScene {
 
   destroy(): void {
     this.player?.destroy();
+    audioManager.stopEngine();
     this.container.removeChildren();
   }
 }

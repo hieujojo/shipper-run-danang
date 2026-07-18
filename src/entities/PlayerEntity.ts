@@ -1,5 +1,5 @@
 import { Container, Graphics } from "pixi.js";
-import { PLAYER_WIDTH, PLAYER_HEIGHT, CANVAS_HEIGHT, CANVAS_WIDTH } from "../core/constants";
+import { PLAYER_WIDTH, PLAYER_HEIGHT, CANVAS_HEIGHT } from "../core/constants";
 import { MovementComponent } from "../components/MovementComponent";
 import { CollisionComponent } from "../components/CollisionComponent";
 import { InputComponent } from "../components/InputComponent";
@@ -14,7 +14,6 @@ export interface IPlayerEntity {
 export class PlayerEntity implements IPlayerEntity {
   container: Container;
   private graphics: Graphics;
-  private _movement: MovementComponent;
   collision: CollisionComponent;
   private input: InputComponent;
   private boostTimer: number = 0;
@@ -26,7 +25,6 @@ export class PlayerEntity implements IPlayerEntity {
   constructor() {
     this.container = new Container();
     this.graphics = new Graphics();
-    this._movement = new MovementComponent(0, 0);
     this.collision = new CollisionComponent(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT);
     this.input = new InputComponent();
   }

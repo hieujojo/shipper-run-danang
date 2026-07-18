@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+
 
 interface LandmarkBannerProps {
   name: string;
@@ -6,17 +6,7 @@ interface LandmarkBannerProps {
 }
 
 export function LandmarkBanner({ name, visible }: LandmarkBannerProps) {
-  const [show, setShow] = useState(false);
-
-  useEffect(() => {
-    if (visible) {
-      setShow(true);
-      const timer = setTimeout(() => setShow(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [visible, name]);
-
-  if (!show) return null;
+  if (!visible) return null;
 
   return (
     <div style={{

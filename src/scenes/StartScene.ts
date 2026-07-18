@@ -6,6 +6,7 @@ export class StartScene {
   onStart: (() => void) | null = null;
 
   constructor(_app: unknown) {
+    void _app;
     this.container = new Container();
   }
 
@@ -32,7 +33,9 @@ export class StartScene {
     }
   }
 
-  update(_deltaTime: number): void {}
+  update(_deltaTime: number): void {
+    void _deltaTime;
+  }
 
   destroy(): void {
     this.container.removeChildren();

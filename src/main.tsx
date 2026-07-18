@@ -9,6 +9,7 @@ import { LandmarkBanner } from "./ui/LandmarkBanner";
 import { HudOverlay } from "./ui/HudOverlay";
 import { GameOverScreen } from "./ui/GameOverScreen";
 
+// eslint-disable-next-line react-refresh/only-export-components
 function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameLoopRef = useRef<GameLoop | null>(null);

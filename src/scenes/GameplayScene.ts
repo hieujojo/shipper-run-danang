@@ -11,6 +11,7 @@ import { audioManager } from "../utils/audioManager";
 import { ParticleSystem } from "../utils/particleSystem";
 import { PackageEntity } from "../entities/PackageEntity";
 import { DeliveryPointEntity } from "../entities/DeliveryPointEntity";
+import { DragonEventScene } from "./DragonEventScene";
 import levelData from "../data/levelData.json";
 
 export class GameplayScene {
@@ -21,7 +22,7 @@ export class GameplayScene {
   private spawnTimer: number = 0;
   private laneWidth: number = 0;
   private lanePositions: number[] = [];
-  private roadMarkings: { y: number }[] = [];
+  private baseEnvironment!: Container;
   private roadContainer!: Container;
   private buildingContainer!: Container;
   private roadOffset: number = 0;
@@ -33,6 +34,11 @@ export class GameplayScene {
   onScoreDelivery: ((bonus: number) => void) | null = null;
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
   private particles!: ParticleSystem;
+  private dragonEvent!: DragonEventScene;
+  private isDragonEvent: boolean = false;
+  private dragonEventTimer: number = 0;
+  private readonly DRAGON_EVENT_DURATION = 60 * 60; // 60 giây
+  private speedOverride: number = 1.0;
   // Speed scaling (Subway Surfers style)
   private elapsedTime: number = 0;
   private speedMultiplier: number = INITIAL_MULTIPLIER;
@@ -44,6 +50,7 @@ export class GameplayScene {
   private lives: number = 3;
 
   constructor(_app: unknown) {
+    void _app;
     this.container = new Container();
   }
 
@@ -74,38 +81,41 @@ export class GameplayScene {
       CANVAS_WIDTH * 0.2 + this.laneWidth * i + this.laneWidth / 2
     );
 
+    this.baseEnvironment = new Container();
+    this.container.addChild(this.baseEnvironment);
+
     // Background
     const bg = new Graphics();
     bg.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     bg.fill(0x1a1a2e);
-    this.container.addChild(bg);
+    this.baseEnvironment.addChild(bg);
 
     // Vỉa hè trái
     const sidewalkLeft = new Graphics();
     sidewalkLeft.rect(0, 0, CANVAS_WIDTH * 0.2, CANVAS_HEIGHT);
     sidewalkLeft.fill(0x3d3d5c);
-    this.container.addChild(sidewalkLeft);
+    this.baseEnvironment.addChild(sidewalkLeft);
 
     // Vỉa hè phải
     const sidewalkRight = new Graphics();
     sidewalkRight.rect(CANVAS_WIDTH * 0.8, 0, CANVAS_WIDTH * 0.2, CANVAS_HEIGHT);
     sidewalkRight.fill(0x3d3d5c);
-    this.container.addChild(sidewalkRight);
+    this.baseEnvironment.addChild(sidewalkRight);
 
     // Road
     const road = new Graphics();
     road.rect(CANVAS_WIDTH * 0.2, 0, CANVAS_WIDTH * 0.6, CANVAS_HEIGHT);
     road.fill(0x2d2d2d);
-    this.container.addChild(road);
+    this.baseEnvironment.addChild(road);
 
     // Scrolling buildings
     this.buildingContainer = new Container();
-    this.container.addChild(this.buildingContainer);
+    this.baseEnvironment.addChild(this.buildingContainer);
     this.buildBuildings();
 
     // Scrolling road container
     this.roadContainer = new Container();
-    this.container.addChild(this.roadContainer);
+    this.baseEnvironment.addChild(this.roadContainer);
     this.buildRoadMarkings();
 
     // Vehicle pool
@@ -130,7 +140,39 @@ export class GameplayScene {
     // Particle system (render trên cùng nhất)
     this.particles = new ParticleSystem();
     this.container.addChild(this.particles.container);
+    // Dragon event
+    this.dragonEvent = new DragonEventScene();
+    this.isDragonEvent = false;
+    this.dragonEventTimer = 0;
+    this.speedOverride = 1.0;
     this.spawnPackage();
+  }
+
+  private startDragonEvent(): void {
+    this.isDragonEvent = true;
+
+    // Ẩn background gốc đi
+    this.baseEnvironment.visible = false;
+    
+    this.dragonEvent.init();
+    // Thêm cầu rồng vào background (ngay trên baseEnvironment đã bị ẩn)
+    this.container.addChildAt(this.dragonEvent.container, 1);
+
+    this.dragonEvent.onSpeedChange = (m: number) => {
+      this.speedOverride = m;
+    };
+    this.dragonEvent.onVisibilityChange = (a: number) => {
+      // Làm mờ container game khi rồng thở
+      this.container.alpha = a;
+    };
+  }
+
+  private stopDragonEvent(): void {
+    this.isDragonEvent = false;
+    this.speedOverride = 1.0;
+    this.container.alpha = 1.0;
+    this.dragonEvent.destroy();
+    this.baseEnvironment.visible = true;
   }
 
   private spawnPackage(): void {
@@ -150,6 +192,7 @@ export class GameplayScene {
   }
 
   private updateDelivery(_deltaTime: number): void {
+    void _deltaTime;
     if (!this.package || !this.deliveryPoint) return;
 
     if (!this.hasPackage && this.package.active) {
@@ -264,9 +307,21 @@ export class GameplayScene {
 
     this.updateDelivery(deltaTime);
     this.particles.update(deltaTime);
+    // Dragon event trigger (sau 2 level = 120 giây)
+    this.dragonEventTimer += deltaTime;
+    if (!this.isDragonEvent && this.dragonEventTimer >= 5 * 60) {
+      this.startDragonEvent();
+    }
+    if (this.isDragonEvent) {
+      this.dragonEvent.update(deltaTime);
+      if (this.dragonEventTimer >= 120 * 60 + this.DRAGON_EVENT_DURATION) {
+        this.stopDragonEvent();
+        this.dragonEventTimer = 0; // reset
+      }
+    }
 
-    // Scroll đường theo speedMultiplier
-    this.roadOffset += BASE_SCROLL_SPEED * this.speedMultiplier * deltaTime;
+    // Scroll đường theo speedMultiplier + dragon override
+    this.roadOffset += BASE_SCROLL_SPEED * this.speedMultiplier * this.speedOverride * deltaTime;
     // Scroll buildings
     this.buildingContainer.y = this.roadOffset * 0.6;
     if (this.buildingContainer.y >= CANVAS_HEIGHT) {
@@ -358,6 +413,7 @@ export class GameplayScene {
   destroy(): void {
     this.player?.destroy();
     this.particles.clear();
+    this.dragonEvent?.destroy();
     audioManager.stopEngine();
     this.container.removeChildren();
   }

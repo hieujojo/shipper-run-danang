@@ -1,16 +1,15 @@
 // Canvas
-export const CANVAS_WIDTH = 405;
+export const CANVAS_WIDTH = 1280;
 export const CANVAS_HEIGHT = 720;
-export const ASPECT_RATIO = 9 / 16;
+export const ASPECT_RATIO = 16 / 9;
 
 // Game
 export const TARGET_FPS = 60;
 export const LANE_COUNT = 3;
 
-// Player
-export const PLAYER_SPEED = 5;
-export const PLAYER_WIDTH = 30;
-export const PLAYER_HEIGHT = 50;
+// Player (quay ngang)
+export const PLAYER_WIDTH = 50;
+export const PLAYER_HEIGHT = 30;
 
 // Traffic
 export const MIN_VEHICLE_SPEED = 2;

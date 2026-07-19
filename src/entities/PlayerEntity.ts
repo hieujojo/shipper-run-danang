@@ -1,5 +1,5 @@
-import { Container, Graphics } from "pixi.js";
-import { PLAYER_WIDTH, PLAYER_HEIGHT, CANVAS_HEIGHT, CANVAS_WIDTH } from "../core/constants";
+import { Container, Sprite, Texture } from "pixi.js";
+import { PLAYER_WIDTH, PLAYER_HEIGHT, CANVAS_HEIGHT } from "../core/constants";
 import { MovementComponent } from "../components/MovementComponent";
 import { CollisionComponent } from "../components/CollisionComponent";
 import { InputComponent } from "../components/InputComponent";
@@ -13,59 +13,84 @@ export interface IPlayerEntity {
 
 export class PlayerEntity implements IPlayerEntity {
   container: Container;
-  private graphics: Graphics;
-  private _movement: MovementComponent;
+  private sprite: Sprite;
   collision: CollisionComponent;
   private input: InputComponent;
+  private boostTimer: number = 0;
+  private readonly BOOST_DURATION = 120;
+  private readonly BOOST_SPEED = 12;
+  private readonly NORMAL_SPEED = 5;
+  private readonly BRAKE_SPEED = 2;
 
   constructor() {
     this.container = new Container();
-    this.graphics = new Graphics();
-    this._movement = new MovementComponent(0, 0);
+    this.sprite = new Sprite(Texture.from("/assets/player_shipper.png"));
+    this.sprite.anchor.set(0.5); // Canh giữa hình ảnh
+    
+    // Scale ảnh sao cho phù hợp với kích thước bounding box
+    // Giả sử ảnh khá to, ta cần scale nó vừa với PLAYER_WIDTH, PLAYER_HEIGHT
+    // Hoặc giữ nguyên tỉ lệ tùy thuộc vào file ảnh
+    // Mình sẽ ép kích thước cho an toàn:
+    this.sprite.width = PLAYER_WIDTH * 1.5;
+    this.sprite.height = PLAYER_HEIGHT * 1.5;
+
     this.collision = new CollisionComponent(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT);
     this.input = new InputComponent();
+    this.container.addChild(this.sprite);
   }
 
   init(x: number, y: number): void {
     this.container.x = x;
     this.container.y = y;
-
-    // Draw shipper (xe máy đơn giản)
-    this.graphics.clear();
-    // Thân xe
-    this.graphics.rect(-PLAYER_WIDTH / 2, -PLAYER_HEIGHT / 2, PLAYER_WIDTH, PLAYER_HEIGHT);
-    this.graphics.fill(0xe74c3c);
-    // Bánh xe
-    this.graphics.ellipse(-PLAYER_WIDTH / 2 + 5, PLAYER_HEIGHT / 2 - 5, 6, 8);
-    this.graphics.fill(0x2c3e50);
-    this.graphics.ellipse(PLAYER_WIDTH / 2 - 5, PLAYER_HEIGHT / 2 - 5, 6, 8);
-    this.graphics.fill(0x2c3e50);
-
-    this.container.addChild(this.graphics);
+    this.draw();
+    // Khởi tạo bounds
+    this.collision.updateBounds(x, y, PLAYER_WIDTH, PLAYER_HEIGHT);
   }
 
-  update(deltaTime: number, roadLeft: number, roadRight: number): void {
-    const inputState = this.input.getState();
-    const speed = 5;
+  private draw(): void {
+    // Không cần dùng graphics để vẽ nữa
+  }
 
-    if (inputState.left) this.container.x -= speed * deltaTime;
-    if (inputState.right) this.container.x += speed * deltaTime;
-    if (inputState.up) this.container.y -= speed * deltaTime;
-    if (inputState.down) this.container.y += speed * deltaTime;
+  update(deltaTime: number, boundTop: number, boundBottom: number): void {
+    let dy = 0;
+    let dx = 0;
+    
+    const state = this.input.getState();
 
-    // Giới hạn trong làn đường
-    const halfW = PLAYER_WIDTH / 2;
-    if (this.container.x - halfW < roadLeft) this.container.x = roadLeft + halfW;
-    if (this.container.x + halfW > roadRight) this.container.x = roadRight - halfW;
+    // Đổi làn: lên/xuống
+    if (state.up) dy -= 1;
+    if (state.down) dy += 1;
+    // Tăng/giảm tốc độ trong giới hạn: trái/phải
+    if (state.left) dx -= 1;
+    if (state.right) dx += 1;
 
-    // Giới hạn trên dưới màn hình
-    const halfH = PLAYER_HEIGHT / 2;
-    if (this.container.y - halfH < 0) this.container.y = halfH;
-    if (this.container.y + halfH > CANVAS_HEIGHT) this.container.y = CANVAS_HEIGHT - halfH;
+    // Di chuyển Y
+    if (dy !== 0) {
+      this.container.y += dy * 5 * deltaTime; // PLAYER_SPEED
+      // Kẹp Y trong phạm vi đường
+      if (this.container.y < boundTop + PLAYER_HEIGHT / 2) {
+        this.container.y = boundTop + PLAYER_HEIGHT / 2;
+      }
+      if (this.container.y > boundBottom - PLAYER_HEIGHT / 2) {
+        this.container.y = boundBottom - PLAYER_HEIGHT / 2;
+      }
+    }
 
-    // Sync collision bounds
-    this.collision.bounds.x = this.container.x - halfW;
-    this.collision.bounds.y = this.container.y - halfH;
+    // Di chuyển X (giới hạn một khoảng nhỏ)
+    if (dx !== 0) {
+      this.container.x += dx * 5 * deltaTime;
+      if (this.container.x < 100) this.container.x = 100;
+      if (this.container.x > 500) this.container.x = 500;
+    }
+
+    // Animation: Nhún nhảy nhẹ hoặc nghiêng xe khi di chuyển
+    if (dy !== 0) {
+      this.sprite.rotation = dy * 0.15; // Nghiêng lên xuống khi chuyển làn
+    } else {
+      this.sprite.rotation = Math.sin(Date.now() / 100) * 0.05; // Rung nhẹ liên tục
+    }
+
+    this.collision.updateBounds(this.container.x, this.container.y, PLAYER_WIDTH, PLAYER_HEIGHT);
   }
 
   resetPosition(x: number, y: number): void {

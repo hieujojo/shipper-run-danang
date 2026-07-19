@@ -1,4 +1,5 @@
 import { Container, Graphics } from "pixi.js";
+import { audioManager } from "../utils/audioManager";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../core/constants";
 
 export class GameOverScene {
@@ -6,6 +7,7 @@ export class GameOverScene {
   onRestart: (() => void) | null = null;
 
   constructor(_app: unknown) {
+    void _app;
     this.container = new Container();
   }
 
@@ -18,7 +20,9 @@ export class GameOverScene {
     overlay.fill(0x000000);
     overlay.alpha = 0.8;
     this.container.addChild(overlay);
-
+    audioManager.playBGM();
+    audioManager.stopEngine();
+    
     // Restart on Space
     window.addEventListener("keydown", this.onKeyDown.bind(this), { once: true });
   }
@@ -29,7 +33,9 @@ export class GameOverScene {
     }
   }
 
-  update(_deltaTime: number): void {}
+  update(_deltaTime: number): void {
+    void _deltaTime;
+  }
 
   destroy(): void {
     this.container.removeChildren();

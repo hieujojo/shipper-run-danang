@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { audioManager } from "../utils/audioManager";
 
 interface HudOverlayProps {
@@ -12,6 +12,19 @@ const VOLUME_STEP = 0.1;
 export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
+  const rangeRef = useRef<HTMLInputElement>(null);
+
+  // Fix: khi HudOverlay vừa mount (chuyển từ StartScreen sang Gameplay),
+  // trình duyệt có thể tự chuyển focus vào <input type="range"> này
+  // vì nó là phần tử focusable đầu tiên xuất hiện sau khi nút "Bắt đầu" bị unmount.
+  // Nếu để vậy, phím ArrowLeft/ArrowRight sẽ bị trình duyệt "giành" để chỉnh volume
+  // thay vì chỉ dùng để di chuyển xe (InputComponent). Chủ động blur ngay khi mount
+  // để đảm bảo không có phần tử nào trong HUD giữ focus bàn phím mặc định.
+  useEffect(() => {
+    if (document.activeElement === rangeRef.current) {
+      rangeRef.current?.blur();
+    }
+  }, []);
 
   const applyVolume = (val: number) => {
     const clamped = Math.min(1, Math.max(0, val));
@@ -31,9 +44,15 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
   };
 
   const adjustVolume = (delta: number) => {
-    // Nếu đang mute mà bấm +, bỏ mute và tăng từ 0
     const base = muted ? 0 : volume;
     applyVolume(base + delta);
+  };
+
+  // Sau khi người dùng tương tác trực tiếp với slide (kéo chuột),
+  // trả focus ra khỏi input ngay khi nhả chuột, để tránh việc
+  // phím mũi tên tiếp tục bị "khoá" vào slide sau khi thao tác xong.
+  const handlePointerUp = () => {
+    rangeRef.current?.blur();
   };
 
   const iconButtonStyle: React.CSSProperties = {
@@ -115,12 +134,16 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
         </button>
 
         <input
+          ref={rangeRef}
           type="range"
           min={0}
           max={1}
           step={0.01}
           value={muted ? 0 : volume}
           onChange={handleVolumeChange}
+          onPointerUp={handlePointerUp}
+          onFocus={(e) => e.currentTarget.blur()}
+          tabIndex={-1}
           style={{
             width: 70,
             accentColor: "#e74c3c",

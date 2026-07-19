@@ -25,9 +25,12 @@ Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn 
 
 | Phím | Hành động |
 |---|---|
-| `↑` `↓` | Đổi làn (Né xe) |
-| `←` `→` | Phanh lại / Tăng tốc tiến lên |
-| `Space` | Kỹ năng đặc biệt (nếu có) |
+| `←` | Di chuyển sang trái |
+| `→` | Di chuyển sang phải |
+| `↑` | Di chuyển lên trên |
+| `↓` | Di chuyển xuống dưới |
+| `Space` (nhấn) | Boost tăng tốc (~2 giây) |
+| `Space` (giữ) | Brake giảm tốc |
 
 ## 🛠️ Tech Stack
 

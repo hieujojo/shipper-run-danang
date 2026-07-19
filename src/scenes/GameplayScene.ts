@@ -127,7 +127,7 @@ export class GameplayScene {
     this.container.addChild(this.package.container);
     this.spawnPackage();
 
-    // Effects khởi tạo trước player để setEffectsManager không bị undefined
+    // Effects khởi tạo trước player
     this.effects = new EffectsManager();
 
     this.player = new PlayerEntity();

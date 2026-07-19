@@ -11,6 +11,13 @@ export const LANE_COUNT = 3;
 export const PLAYER_WIDTH = 50;
 export const PLAYER_HEIGHT = 30;
 
+// Giới hạn di chuyển ngang của xe — cho phép chạy gần như HẾT chiều rộng canvas,
+// chỉ chừa margin bằng nửa PLAYER_WIDTH (vì sprite dùng anchor 0.5 ở tâm) để
+// xe không bị cắt hình khi chạm mép trái/phải màn hình.
+// Tính theo CANVAS_WIDTH nên tự co giãn nếu sau này đổi độ phân giải canvas.
+export const PLAYER_X_MIN = PLAYER_WIDTH / 2;
+export const PLAYER_X_MAX = CANVAS_WIDTH - PLAYER_WIDTH / 2;
+
 // Traffic
 export const MIN_VEHICLE_SPEED = 2;
 export const MAX_VEHICLE_SPEED = 8;

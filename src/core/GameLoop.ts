@@ -15,7 +15,12 @@ export class GameLoop {
 
   onStateChange: ((state: GameState) => void) | null = null;
   onScoreUpdate: ((score: number) => void) | null = null;
+  onLevelChange: ((levelName: string) => void) | null = null;
+  onPackageChange: ((hasPackage: boolean) => void) | null = null;
   onLivesChange: ((lives: number) => void) | null = null;
+  private levelTimer: number = 0;
+  private currentLevelIndex: number = 0;
+  private readonly LEVEL_DURATION = 60 * 60; // 60 giây mỗi level
   constructor(app: Application) {
     this.app = app;
     this.stateManager = new GameStateManager();
@@ -25,6 +30,11 @@ export class GameLoop {
 
     this.gameplayScene.onGameOver = () => this.transitionTo(GameState.GAME_OVER);
     this.gameplayScene.onLivesChange = (l: number) => this.onLivesChange?.(l);
+    this.gameplayScene.onPackageChange = (val: boolean) => this.onPackageChange?.(val);
+    this.gameplayScene.onScoreDelivery = (bonus: number) => {
+      this.score += bonus;
+      this.onScoreUpdate?.(this.score);
+    };
     this.startScene.onStart = () => this.transitionTo(GameState.GAMEPLAY);
     this.gameOverScene.onRestart = () => this.transitionTo(GameState.GAMEPLAY);
   }
@@ -35,33 +45,48 @@ export class GameLoop {
   }
 
   private update(ticker: { deltaTime: number }): void {
-    const state = this.stateManager.getState();
+    try {
+      const state = this.stateManager.getState();
 
-    switch (state) {
-      case GameState.START:
-        this.startScene.update(ticker.deltaTime);
-        break;
-      case GameState.GAMEPLAY:
-        this.gameplayScene.update(ticker.deltaTime);
-        // Score tăng theo thời gian
-        this.scoreTimer++;
-        if (this.scoreTimer >= 60) {
-          this.scoreTimer = 0;
-          this.score += 10;
-          this.onScoreUpdate?.(this.score);
-        }
-        break;
-      case GameState.GAME_OVER:
-        this.gameOverScene.update(ticker.deltaTime);
-        break;
+      switch (state) {
+        case GameState.START:
+          this.startScene.update(ticker.deltaTime);
+          break;
+        case GameState.GAMEPLAY:
+          this.gameplayScene.update(ticker.deltaTime);
+          // Score tăng theo thời gian
+          this.scoreTimer++;
+          if (this.scoreTimer >= 60) {
+            this.scoreTimer = 0;
+            this.score += 10;
+            this.onScoreUpdate?.(this.score);
+          }
+          // Level progression
+          this.levelTimer++;
+          if (this.levelTimer >= this.LEVEL_DURATION) {
+            this.levelTimer = 0;
+            this.currentLevelIndex = (this.currentLevelIndex + 1) % 3;
+            const levelNames = ["Đại lộ Phạm Văn Đồng", "Ngã tư Ngô Quyền", "Cầu Rồng"];
+            this.onLevelChange?.(levelNames[this.currentLevelIndex]);
+          }
+          break;
+        case GameState.GAME_OVER:
+          this.gameOverScene.update(ticker.deltaTime);
+          break;
+      }
+    } catch (err: any) {
+      console.error("Lỗi trong vòng lặp GameLoop:", err);
+      // Dừng ticker để tránh văng log liên tục
+      this.app.ticker.stop();
+      alert("Lỗi game: " + err.message + "\nXem Console để biết thêm chi tiết.");
     }
   }
 
   transitionTo(state: GameState): void {
     if (state === GameState.GAMEPLAY) {
-      this.score = 0;
-      this.scoreTimer = 0;
-      this.onScoreUpdate?.(0);
+      this.levelTimer = 0;
+      this.currentLevelIndex = 0;
+      this.onLevelChange?.("Đại lộ Phạm Văn Đồng");
     }
     this.loadScene(state);
   }

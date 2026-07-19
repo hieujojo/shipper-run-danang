@@ -25,4 +25,11 @@ export class CollisionComponent implements ICollisionComponent {
       this.bounds.y + this.bounds.height > other.y
     );
   }
+
+  updateBounds(x: number, y: number, width: number, height: number): void {
+    this.bounds.x = x;
+    this.bounds.y = y;
+    this.bounds.width = width;
+    this.bounds.height = height;
+  }
 }

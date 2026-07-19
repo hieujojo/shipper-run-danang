@@ -32,7 +32,7 @@ src/
 
 ## 🎮 2. PixiJS v8 Rules (STRICT)
 
-1. **Chỉ dùng PIXI.Graphics để vẽ** — KHÔNG dùng file ảnh sprite (.png, .jpg, .svg).
+1. **Khuyến khích dùng PIXI.Sprite (Pixel Art)** cho các Entity (Player, Vehicle, Package) để mang lại cảm giác retro. Có thể kết hợp `PIXI.Graphics` cho các UI hoặc hiệu ứng hình học đơn giản.
 2. **Tách biệt layer rõ ràng:**
    - React layer: StartScreen, HUD (điểm, timer), GameOverScreen
    - PixiJS layer: Player, Traffic, Map, Collision, Game Loop
@@ -103,7 +103,7 @@ let state = "start";
 1. **KHÔNG tạo object mới trong game loop** — gây GC spike, drop FPS.
 2. **KHÔNG dùng `console.log` trong production** — chỉ dùng khi debug, xóa trước khi commit.
 3. **Target:** Giữ FPS ổn định 60fps trên Chrome, Firefox, Edge.
-4. **Tỷ lệ khung hình:** Khóa 9:16, xử lý resize động.
+4. **Tỷ lệ khung hình:** Game thiết kế theo chuẩn màn hình ngang (16:9), tự động scale responsive full-width màn hình.
 
 ---
 

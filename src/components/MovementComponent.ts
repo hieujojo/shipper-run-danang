@@ -14,6 +14,7 @@ export class MovementComponent implements IMovementComponent {
   }
 
   move(_deltaTime: number): void {
+    void _deltaTime;
     // Override per entity
   }
 }

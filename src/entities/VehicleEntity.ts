@@ -1,4 +1,4 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Sprite, Texture } from "pixi.js";
 import { PLAYER_WIDTH, PLAYER_HEIGHT } from "../core/constants";
 import { MovementComponent } from "../components/MovementComponent";
 import { CollisionComponent } from "../components/CollisionComponent";
@@ -14,15 +14,21 @@ export interface IVehicleEntity {
 export class VehicleEntity implements IVehicleEntity {
   container: Container;
   active: boolean = false;
-  private graphics: Graphics;
+  private sprite: Sprite;
   private movement: MovementComponent;
   collision: CollisionComponent;
+  speed: number = 0;
 
   constructor() {
     this.container = new Container();
-    this.graphics = new Graphics();
+    this.sprite = new Sprite(Texture.from("/assets/vehicle_car.png"));
+    this.sprite.anchor.set(0.5);
+    this.sprite.width = 75; // Kích thước xe cộ
+    this.sprite.height = 45;
+
     this.movement = new MovementComponent(0, 0);
     this.collision = new CollisionComponent(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT * 1.5);
+    this.container.addChild(this.sprite);
   }
 
   init(x: number, y: number, speed: number): void {
@@ -31,34 +37,30 @@ export class VehicleEntity implements IVehicleEntity {
     this.container.y = y;
     this.movement.speedY = speed;
 
-    // Draw vehicle (xe buýt/xe máy AI)
-    this.graphics.clear();
-    // Thân xe
-    this.graphics.rect(-PLAYER_WIDTH / 2, -PLAYER_HEIGHT / 2, PLAYER_WIDTH, PLAYER_HEIGHT * 1.5);
-    this.graphics.fill(0x3498db);
-    // Bánh xe
-    this.graphics.ellipse(-PLAYER_WIDTH / 2 + 5, PLAYER_HEIGHT - 5, 6, 8);
-    this.graphics.fill(0x2c3e50);
-    this.graphics.ellipse(PLAYER_WIDTH / 2 - 5, PLAYER_HEIGHT - 5, 6, 8);
-    this.graphics.fill(0x2c3e50);
+    this.speed = speed;
+    this.speed = speed;
+    this.draw();
+    this.collision.updateBounds(x, y, 60, 30);
+  }
 
-    this.container.addChild(this.graphics);
+  private draw(): void {
+    // Bỏ qua vì đã dùng Sprite
   }
 
   update(deltaTime: number): void {
     if (!this.active) return;
-    this.container.y += this.movement.speedY * deltaTime;
+    this.container.x += this.speed * deltaTime;
+    
+    // Animation: Xe cộ cũng nhún nhảy theo Y
+    this.sprite.y = Math.sin(Date.now() / 150 + this.container.x) * 2;
 
-    // Sync collision bounds
-    this.collision.bounds.x = this.container.x - PLAYER_WIDTH / 2;
-    this.collision.bounds.y = this.container.y - PLAYER_HEIGHT / 2;
+    this.collision.updateBounds(this.container.x, this.container.y, 60, 30);
   }
 
-  reset(): void {
+  reset(x: number = 0, y: number = 0, speed: number = 0): void {
     this.active = false;
-    this.container.x = -999;
-    this.container.y = -999;
-    this.movement.speedY = 0;
-    this.graphics.clear();
+    this.container.x = x;
+    this.container.y = y;
+    this.speed = speed;
   }
 }

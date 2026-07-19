@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { audioManager } from "../utils/audioManager";
 
 interface HudOverlayProps {
@@ -7,21 +7,62 @@ interface HudOverlayProps {
   hasPackage: boolean;
 }
 
+const VOLUME_STEP = 0.1;
+
 export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
+  const rangeRef = useRef<HTMLInputElement>(null);
+
+  // Fix: khi HudOverlay vừa mount (chuyển từ StartScreen sang Gameplay),
+  // trình duyệt có thể tự chuyển focus vào <input type="range"> này
+  // vì nó là phần tử focusable đầu tiên xuất hiện sau khi nút "Bắt đầu" bị unmount.
+  // Nếu để vậy, phím ArrowLeft/ArrowRight sẽ bị trình duyệt "giành" để chỉnh volume
+  // thay vì chỉ dùng để di chuyển xe (InputComponent). Chủ động blur ngay khi mount
+  // để đảm bảo không có phần tử nào trong HUD giữ focus bàn phím mặc định.
+  useEffect(() => {
+    if (document.activeElement === rangeRef.current) {
+      rangeRef.current?.blur();
+    }
+  }, []);
+
+  const applyVolume = (val: number) => {
+    const clamped = Math.min(1, Math.max(0, val));
+    setVolume(clamped);
+    setMuted(clamped === 0);
+    audioManager.setMasterVolume(clamped);
+  };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseFloat(e.target.value);
-    setVolume(val);
-    setMuted(val === 0);
-    audioManager.setMasterVolume(val);
+    applyVolume(parseFloat(e.target.value));
   };
 
   const toggleMute = () => {
     const next = !muted;
     setMuted(next);
     audioManager.setMasterVolume(next ? 0 : volume);
+  };
+
+  const adjustVolume = (delta: number) => {
+    const base = muted ? 0 : volume;
+    applyVolume(base + delta);
+  };
+
+  // Sau khi người dùng tương tác trực tiếp với slide (kéo chuột),
+  // trả focus ra khỏi input ngay khi nhả chuột, để tránh việc
+  // phím mũi tên tiếp tục bị "khoá" vào slide sau khi thao tác xong.
+  const handlePointerUp = () => {
+    rangeRef.current?.blur();
+  };
+
+  const iconButtonStyle: React.CSSProperties = {
+    background: "none",
+    border: "none",
+    color: "white",
+    fontSize: 14,
+    cursor: "pointer",
+    padding: "0 4px",
+    lineHeight: 1,
   };
 
   return (
@@ -78,30 +119,45 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       }}>
         <button
           onClick={toggleMute}
-          style={{
-            background: "none",
-            border: "none",
-            color: "white",
-            fontSize: 14,
-            cursor: "pointer",
-            padding: 0,
-          }}
+          style={iconButtonStyle}
+          aria-label={muted ? "Bật tiếng" : "Tắt tiếng"}
         >
           {muted || volume === 0 ? "🔇" : volume < 0.5 ? "🔉" : "🔊"}
         </button>
+
+        <button
+          onClick={() => adjustVolume(-VOLUME_STEP)}
+          style={iconButtonStyle}
+          aria-label="Giảm âm lượng"
+        >
+          −
+        </button>
+
         <input
+          ref={rangeRef}
           type="range"
           min={0}
           max={1}
           step={0.01}
           value={muted ? 0 : volume}
           onChange={handleVolumeChange}
+          onPointerUp={handlePointerUp}
+          onFocus={(e) => e.currentTarget.blur()}
+          tabIndex={-1}
           style={{
             width: 70,
             accentColor: "#e74c3c",
             cursor: "pointer",
           }}
         />
+
+        <button
+          onClick={() => adjustVolume(VOLUME_STEP)}
+          style={iconButtonStyle}
+          aria-label="Tăng âm lượng"
+        >
+          +
+        </button>
       </div>
 
       {/* Tim */}

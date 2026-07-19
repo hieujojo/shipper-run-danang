@@ -12,6 +12,7 @@ import { ParticleSystem } from "../utils/particleSystem";
 import { PackageEntity } from "../entities/PackageEntity";
 import { DeliveryPointEntity } from "../entities/DeliveryPointEntity";
 import { DragonEventScene } from "./DragonEventScene";
+import { EffectsManager } from "../utils/effectsManager";
 import levelData from "../data/levelData.json";
 
 export class GameplayScene {
@@ -45,6 +46,7 @@ export class GameplayScene {
   private initialMultiplier: number = INITIAL_MULTIPLIER;
   private speedIncreaseRate: number = SPEED_INCREASE_RATE;
   private maxSpeedMultiplier: number = MAX_SPEED_MULTIPLIER;
+  private effectsManager: EffectsManager = new EffectsManager();
   onGameOver: (() => void) | null = null;
   onLivesChange: ((lives: number) => void) | null = null;
   private lives: number = 3;
@@ -138,6 +140,7 @@ export class GameplayScene {
     // Player (render trên cùng)
     this.player = new PlayerEntity();
     this.player.init(CANVAS_WIDTH * 0.2, CANVAS_HEIGHT / 2); // Cố định ở 20% màn hình bên trái
+    this.player.setEffectsManager(this.effectsManager);
     this.container.addChild(this.player.container);
     
     // Particle system (render trên cùng nhất)
@@ -315,6 +318,14 @@ export class GameplayScene {
 
     this.updateDelivery(deltaTime);
     this.particles.update(deltaTime);
+    this.effectsManager.update(deltaTime);
+     if (this.speedMultiplier > 1.2) {
+      this.particles.emitSpeedTrail(
+        this.player.container.x - 25,
+        this.player.container.y,
+        this.speedMultiplier
+      );
+    }
     
     // Dragon event trigger
     this.dragonEventTimer += deltaTime;
@@ -359,20 +370,21 @@ export class GameplayScene {
 
       // Check collision
       if (this.player.collision.checkCollision(vehicle.collision.bounds)) {
+        if (this.player.isInvincible()) continue;
         this.vehiclePool.release(vehicle);
         this.activeVehicles.splice(i, 1);
         this.lives--;
         this.onLivesChange?.(this.lives);
         audioManager.playCrash();
         this.particles.emitCrash(this.player.container.x, this.player.container.y);
-        
+
         if (this.lives <= 0) {
           audioManager.stopEngine();
           this.onGameOver?.();
           return;
         }
-        
-        // Hồi sinh ở 20% bên trái, giữa đường
+
+        this.player.takeDamage();
         this.player.resetPosition(CANVAS_WIDTH * 0.2, CANVAS_HEIGHT / 2);
         continue;
       }
@@ -432,6 +444,7 @@ export class GameplayScene {
     this.particles.clear();
     this.dragonEvent?.destroy();
     audioManager.stopEngine();
+    this.effectsManager.destroy();
     this.container.removeChildren();
   }
 }

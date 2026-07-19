@@ -1,11 +1,14 @@
 import { Container, Graphics } from "pixi.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT } from "../core/constants";
 import { DragonEntity, type DragonBreath } from "../entities/DragonEntity";
+import { EffectsManager } from "../utils/effectsManager";
 
 export class DragonEventScene {
   container: Container;
   private dragon!: DragonEntity;
   private overlay!: Graphics;
+  private effects: EffectsManager;
+  private dragonPulseTimer: number = 0;
   active: boolean = false;
 
   onSpeedChange: ((multiplier: number) => void) | null = null;
@@ -13,6 +16,7 @@ export class DragonEventScene {
 
   constructor() {
     this.container = new Container();
+    this.effects = new EffectsManager();
   }
 
   init(): void {
@@ -65,23 +69,27 @@ export class DragonEventScene {
 
   private handleBreathStart(type: DragonBreath): void {
     if (type === "fire") {
+      // Overlay đỏ chỉ làm nền nhạt, ColorMatrixFilter làm chính
       this.overlay.clear();
       this.overlay.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       this.overlay.fill(0xe74c3c);
-      this.overlay.alpha = 0.3;
+      this.overlay.alpha = 0.08; // rất nhạt, filter làm phần còn lại
+      this.effects.applyFireTint(this.container);
       this.onSpeedChange?.(0.5); // Lửa → giảm tốc
     } else {
       this.overlay.clear();
       this.overlay.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       this.overlay.fill(0x3498db);
-      this.overlay.alpha = 0.25;
+      this.overlay.alpha = 0.08;
+      this.effects.applyWaterTint(this.container);
       this.onSpeedChange?.(1.8); // Nước → tăng tốc
     }
-    this.onVisibilityChange?.(0.4);
+    this.onVisibilityChange?.(0.5);
   }
 
   private handleBreathEnd(): void {
     this.overlay.alpha = 0;
+    this.effects.clearDragonEffect(this.container);
     this.onSpeedChange?.(1.0);
     this.onVisibilityChange?.(1.0);
   }
@@ -89,10 +97,18 @@ export class DragonEventScene {
   update(deltaTime: number): void {
     if (!this.active) return;
     this.dragon?.update(deltaTime);
+    this.effects.update(deltaTime);
+
+    // Pulsating scale cho rồng: "thở" nhẹ ±2%
+    this.dragonPulseTimer += deltaTime * 0.05;
+    const pulse = 1 + Math.sin(this.dragonPulseTimer) * 0.02;
+    this.dragon.container.scale.set(pulse);
   }
 
   destroy(): void {
     this.active = false;
+    this.effects.clearDragonEffect(this.container);
+    this.effects.destroy();
     this.dragon?.destroy();
     this.container.removeChildren();
   }

@@ -9,6 +9,7 @@ import { VehicleEntity } from "../entities/VehicleEntity";
 import { ObjectPool } from "../utils/objectPool";
 import { audioManager } from "../utils/audioManager";
 import { ParticleSystem } from "../utils/particleSystem";
+import { EffectsManager } from "../utils/effectsManager";
 import { PackageEntity } from "../entities/PackageEntity";
 import { DeliveryPointEntity } from "../entities/DeliveryPointEntity";
 import { DragonEventScene } from "./DragonEventScene";
@@ -34,6 +35,7 @@ export class GameplayScene {
   onScoreDelivery: ((bonus: number) => void) | null = null;
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
   private particles!: ParticleSystem;
+  private effects!: EffectsManager;
   private dragonEvent!: DragonEventScene;
   private isDragonEvent: boolean = false;
   private dragonEventTimer: number = 0;
@@ -143,6 +145,9 @@ export class GameplayScene {
     // Particle system (render trên cùng nhất)
     this.particles = new ParticleSystem();
     this.container.addChild(this.particles.container);
+
+    // Effects Manager (PixiJS Filters)
+    this.effects = new EffectsManager();
     
     // Dragon event
     this.dragonEvent = new DragonEventScene();
@@ -315,6 +320,16 @@ export class GameplayScene {
 
     this.updateDelivery(deltaTime);
     this.particles.update(deltaTime);
+    this.effects.update(deltaTime);
+
+    // Speed trail: phát khói phía sau shipper khi tốc độ cao
+    if (this.speedMultiplier > 1.2) {
+      this.particles.emitSpeedTrail(
+        this.player.container.x,
+        this.player.container.y,
+        this.speedMultiplier
+      );
+    }
     
     // Dragon event trigger
     this.dragonEventTimer += deltaTime;
@@ -357,21 +372,27 @@ export class GameplayScene {
       const vehicle = this.activeVehicles[i];
       vehicle.update(deltaTime);
 
-      // Check collision
-      if (this.player.collision.checkCollision(vehicle.collision.bounds)) {
+      // Check collision — bỏ qua nếu đang invincible
+      if (
+        this.player.collision.checkCollision(vehicle.collision.bounds) &&
+        !this.player.isInvincible()
+      ) {
         this.vehiclePool.release(vehicle);
         this.activeVehicles.splice(i, 1);
         this.lives--;
         this.onLivesChange?.(this.lives);
         audioManager.playCrash();
         this.particles.emitCrash(this.player.container.x, this.player.container.y);
-        
+        // Kích hoạt invincible frames + blink
+        this.player.takeDamage();
+
         if (this.lives <= 0) {
+          this.effects.destroy();
           audioManager.stopEngine();
           this.onGameOver?.();
           return;
         }
-        
+
         // Hồi sinh ở 20% bên trái, giữa đường
         this.player.resetPosition(CANVAS_WIDTH * 0.2, CANVAS_HEIGHT / 2);
         continue;
@@ -430,6 +451,7 @@ export class GameplayScene {
   destroy(): void {
     this.player?.destroy();
     this.particles.clear();
+    this.effects.destroy();
     this.dragonEvent?.destroy();
     audioManager.stopEngine();
     this.container.removeChildren();

@@ -18,15 +18,14 @@ export class PlayerEntity implements IPlayerEntity {
   private input: InputComponent;
   private invincibleTimer: number = 0;
   private effectsManager: EffectsManager | null = null;
+  private readonly INVINCIBLE_DURATION = 120;
 
   constructor() {
     this.container = new Container();
     this.sprite = new Sprite(Texture.from("/assets/player_shipper.png"));
     this.sprite.anchor.set(0.5);
-
     this.sprite.width = PLAYER_WIDTH * 1.5;
     this.sprite.height = PLAYER_HEIGHT * 1.5;
-
     this.collision = new CollisionComponent(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT);
     this.input = new InputComponent();
     this.container.addChild(this.sprite);
@@ -35,12 +34,9 @@ export class PlayerEntity implements IPlayerEntity {
   init(x: number, y: number): void {
     this.container.x = x;
     this.container.y = y;
-    this.draw();
+    this.invincibleTimer = 0;
+    this.container.alpha = 1;
     this.collision.updateBounds(x, y, PLAYER_WIDTH, PLAYER_HEIGHT);
-  }
-
-  private draw(): void {
-    // Không cần dùng graphics để vẽ nữa
   }
 
   setEffectsManager(em: EffectsManager): void {
@@ -49,8 +45,8 @@ export class PlayerEntity implements IPlayerEntity {
 
   takeDamage(): void {
     if (this.invincibleTimer > 0) return;
-    this.invincibleTimer = 120;
-    this.effectsManager?.applyHitEffect(this.container, 120);
+    this.invincibleTimer = this.INVINCIBLE_DURATION;
+    this.effectsManager?.applyHitEffect(this.container, this.INVINCIBLE_DURATION);
   }
 
   isInvincible(): boolean {
@@ -58,16 +54,20 @@ export class PlayerEntity implements IPlayerEntity {
   }
 
   update(deltaTime: number, boundTop: number, boundBottom: number): void {
+    // Invincible timer
     if (this.invincibleTimer > 0) {
       this.invincibleTimer -= deltaTime;
+      const blink = Math.sin(this.invincibleTimer * 0.5);
+      this.container.alpha = blink > 0 ? 1.0 : 0.2;
       if (this.invincibleTimer <= 0) {
         this.invincibleTimer = 0;
+        this.container.alpha = 1.0;
         this.effectsManager?.clearHitEffect(this.container);
       }
     }
+
     let dy = 0;
     let dx = 0;
-
     const state = this.input.getState();
 
     if (state.up) dy -= 1;
@@ -87,8 +87,6 @@ export class PlayerEntity implements IPlayerEntity {
 
     if (dx !== 0) {
       this.container.x += dx * 5 * deltaTime;
-      // Trước đây dùng magic number 100/500 — vi phạm RULES.md (Hằng số phải
-      // tập trung ở src/core/constants.ts). Nay dùng PLAYER_X_MIN/PLAYER_X_MAX.
       if (this.container.x < PLAYER_X_MIN) this.container.x = PLAYER_X_MIN;
       if (this.container.x > PLAYER_X_MAX) this.container.x = PLAYER_X_MAX;
     }

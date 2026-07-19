@@ -19,7 +19,7 @@ Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn 
 |---|---|---|
 | Đại lộ Phạm Văn Đồng | ⭐ Thấp | Đường rộng, nhập môn |
 | Ngã tư Ngô Quyền | ⭐⭐⭐ Cao | Đường hẹp, giao thông hỗn loạn |
-| Cầu Rồng | 🐉 Sự kiện | Rồng phun lửa/nước, ảnh hưởng tầm nhìn |
+| Cầu Rồng | 🐉 Sự kiện | PNG sprite Cầu Rồng thực tế, rồng phun lửa/nước — lửa tăng xe, nước tăng package |
 
 ## 🕹️ Điều khiển
 
@@ -35,11 +35,12 @@ Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn 
 ## 🛠️ Tech Stack
 
 - **Rendering:** PixiJS v8 (WebGL/Canvas cho Gameplay)
+- **Visual Effects:** PixiJS v8 Built-in Filters (BlurFilter, ColorMatrixFilter, AlphaFilter)
 - **UI Layer:** React (Menu, HUD, Game Over Screen)
 - **Build Tool:** Vite 5.x + TypeScript
 - **Audio:** Howler.js
 - **Deploy:** Vercel
-- **Graphics:** PIXI.Sprite (Pixel Art assets) kết hợp PIXI.Graphics
+- **Graphics:** PIXI.Sprite (Pixel Art assets) + PIXI.Graphics + PixiJS Filters
 
 ## 🚀 Chạy local
 
@@ -91,3 +92,37 @@ Game áp dụng cơ chế tốc độ kiểu **Subway Surfers / Temple Run**:
 
 - **Tốc độ khởi đầu, tốc độ tăng, ngưỡng tối đa** đều cấu hình trong `levelData.json` — không hardcode.
 - `speedMultiplier` áp dụng đồng thời lên: scroll đường, tốc độ xe địch, tần suất spawn xe.
+ 
+## ✨ Visual Effects (PixiJS Filters)
+
+| Effect | Trigger | Mô tả |
+|---|---|---|
+| Invincible Blink | Va chạm xe | Player blink sáng/tối 120 frames, miễn nhiễm va chạm |
+| Speed Trail | `speedMultiplier > 1.2` | Khói xám phía sau shipper, càng nhanh càng dày |
+| Fire Tint | Cầu Rồng phun lửa | `ColorMatrixFilter` đỏ cam toàn cảnh + spawn xe x2 |
+| Water Tint | Cầu Rồng phun nước | `ColorMatrixFilter` xanh lạnh toàn cảnh + package xuất hiện nhanh x3 |
+
+## 🗺️ Thêm địa danh mới
+
+Chỉ cần thêm vào `src/data/levelData.json` — không cần sửa engine:
+
+\`\`\`json
+{
+  "id": 4,
+  "key": "cau-song-han",
+  "name": "Cầu Sông Hàn",
+  "isDragonEvent": false,
+  "difficulty": "medium",
+  "laneCount": 3,
+  "baseSpeed": 4,
+  "trafficDensity": 0.5,
+  "initialMultiplier": 0.8,
+  "speedIncreaseRate": 0.022,
+  "maxSpeedMultiplier": 3.0
+}
+\`\`\`
+
+Để thêm **landmark có visual event** (như Cầu Rồng):
+1. Tạo PNG asset nền trong suốt → đặt vào `public/assets/`
+2. Thêm vào `Assets.load()` trong `src/main.tsx`
+3. Khai báo `isDragonEvent: true` và asset path trong `levelData.json`

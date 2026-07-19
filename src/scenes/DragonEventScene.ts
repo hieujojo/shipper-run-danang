@@ -1,63 +1,59 @@
-import { Container, Graphics } from "pixi.js";
-import { CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT } from "../core/constants";
+import { Container, Sprite, Texture } from "pixi.js";
+import { CANVAS_WIDTH, CANVAS_HEIGHT } from "../core/constants";
 import { DragonEntity, type DragonBreath } from "../entities/DragonEntity";
+import { EffectsManager } from "../utils/effectsManager";
 
 export class DragonEventScene {
   container: Container;
   private dragon!: DragonEntity;
-  private overlay!: Graphics;
+  private bridgeTop!: Sprite;
+  private bridgeBottom!: Sprite;
+  private effects: EffectsManager;
+  private dragonPulseTimer: number = 0;
   active: boolean = false;
 
   onSpeedChange: ((multiplier: number) => void) | null = null;
-  onVisibilityChange: ((alpha: number) => void) | null = null;
+  onBreathEffect: ((type: DragonBreath | null) => void) | null = null;
 
   constructor() {
     this.container = new Container();
+    this.effects = new EffectsManager();
   }
 
-  init(): void {
+  init(assetPath: string = "/assets/dragon_bridge.png"): void {
     this.container.removeChildren();
     this.active = true;
 
-    // Cầu Rồng background
-    const bridge = new Graphics();
-    // Mặt cầu ngang
-    bridge.rect(0, CANVAS_HEIGHT * 0.15, CANVAS_WIDTH, CANVAS_HEIGHT * 0.7);
-    bridge.fill(0x5d6d7e);
-    // Lan can trên
-    bridge.rect(0, CANVAS_HEIGHT * 0.15, CANVAS_WIDTH, 15);
-    bridge.fill(0x85929e);
-    // Lan can dưới
-    bridge.rect(0, CANVAS_HEIGHT * 0.85 - 15, CANVAS_WIDTH, 15);
-    bridge.fill(0x85929e);
-    // Đèn cầu
-    for (let x = 0; x < CANVAS_WIDTH; x += 80) {
-      bridge.circle(x, CANVAS_HEIGHT * 0.15 + 7, 5);
-      bridge.fill(0xf1c40f);
-      bridge.circle(x, CANVAS_HEIGHT * 0.85 - 7, 5);
-      bridge.fill(0xf1c40f);
-    }
-    // Vạch làn
-    const laneWidth = (CANVAS_HEIGHT * 0.6) / LANE_COUNT;
-    for (let i = 1; i < LANE_COUNT; i++) {
-      const y = CANVAS_HEIGHT * 0.2 + laneWidth * i;
-      for (let x = 0; x < CANVAS_WIDTH; x += 40) {
-        bridge.rect(x, y - 2, 20, 4);
-        bridge.fill(0xffffff);
-      }
-    }
-    this.container.addChild(bridge);
+    const tex = Texture.from(assetPath);
+    const imgW = tex.width;
+    const imgH = tex.height;
 
-    // Overlay hiệu ứng lửa/nước
-    this.overlay = new Graphics();
-    this.overlay.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-    this.overlay.fill(0x000000);
-    this.overlay.alpha = 0;
-    this.container.addChild(this.overlay);
+    const scaleX = CANVAS_WIDTH / imgW;
+    const scaledH = imgH * scaleX * 1.5;
 
-    // Dragon
+    // Cầu Rồng trên
+    this.bridgeTop = new Sprite(tex);
+    this.bridgeTop.width = CANVAS_WIDTH;
+    this.bridgeTop.height = scaledH;
+    this.bridgeTop.x = 0;
+    this.bridgeTop.y = -scaledH * 0.25;
+    this.container.addChild(this.bridgeTop);
+
+    // Cầu Rồng dưới — flip Y
+    this.bridgeBottom = new Sprite(tex);
+    this.bridgeBottom.width = CANVAS_WIDTH;
+    this.bridgeBottom.height = scaledH;
+    this.bridgeBottom.anchor.set(0, 1);
+    this.bridgeBottom.scale.y = -1;
+    this.bridgeBottom.width = CANVAS_WIDTH;
+    this.bridgeBottom.x = 0;
+    this.bridgeBottom.y = CANVAS_HEIGHT + scaledH * 0.45;
+    this.container.addChild(this.bridgeBottom);
+
+    // Dragon — ẩn Graphics, chỉ giữ logic breath
     this.dragon = new DragonEntity();
-    this.dragon.init();
+    this.dragon.init(CANVAS_WIDTH * 0.75, CANVAS_HEIGHT * 0.09);
+    this.dragon.container.visible = false;
     this.dragon.onBreathStart = (type: DragonBreath) => this.handleBreathStart(type);
     this.dragon.onBreathEnd = () => this.handleBreathEnd();
     this.container.addChild(this.dragon.container);
@@ -65,34 +61,41 @@ export class DragonEventScene {
 
   private handleBreathStart(type: DragonBreath): void {
     if (type === "fire") {
-      this.overlay.clear();
-      this.overlay.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      this.overlay.fill(0xe74c3c);
-      this.overlay.alpha = 0.3;
-      this.onSpeedChange?.(0.5); // Lửa → giảm tốc
+      this.effects.applyFireTint(this.container);
+      this.onSpeedChange?.(0.5);
     } else {
-      this.overlay.clear();
-      this.overlay.rect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      this.overlay.fill(0x3498db);
-      this.overlay.alpha = 0.25;
-      this.onSpeedChange?.(1.8); // Nước → tăng tốc
+      this.effects.applyWaterTint(this.container);
+      this.onSpeedChange?.(1.8);
     }
-    this.onVisibilityChange?.(0.4);
+    this.onBreathEffect?.(type);
   }
 
   private handleBreathEnd(): void {
-    this.overlay.alpha = 0;
+    this.effects.clearDragonEffect(this.container);
     this.onSpeedChange?.(1.0);
-    this.onVisibilityChange?.(1.0);
+    this.onBreathEffect?.(null);
+  }
+
+  scroll(roadOffset: number): void {
+    const parallax = roadOffset * 0.4;
+    this.bridgeTop.x = parallax % CANVAS_WIDTH;
+    this.bridgeBottom.x = parallax % CANVAS_WIDTH;
   }
 
   update(deltaTime: number): void {
     if (!this.active) return;
     this.dragon?.update(deltaTime);
+    this.effects.update(deltaTime);
+
+    this.dragonPulseTimer += deltaTime * 0.05;
+    const pulse = 1 + Math.sin(this.dragonPulseTimer) * 0.02;
+    this.dragon.container.scale.set(pulse);
   }
 
   destroy(): void {
     this.active = false;
+    this.effects.clearDragonEffect(this.container);
+    this.effects.destroy();
     this.dragon?.destroy();
     this.container.removeChildren();
   }

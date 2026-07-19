@@ -1,8 +1,8 @@
 import { Container, Sprite, Texture } from "pixi.js";
 import { PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_X_MIN, PLAYER_X_MAX } from "../core/constants";
-import { MovementComponent } from "../components/MovementComponent";
 import { CollisionComponent } from "../components/CollisionComponent";
 import { InputComponent } from "../components/InputComponent";
+import { EffectsManager } from "../utils/effectsManager";
 
 export interface IPlayerEntity {
   container: Container;
@@ -16,11 +16,8 @@ export class PlayerEntity implements IPlayerEntity {
   private sprite: Sprite;
   collision: CollisionComponent;
   private input: InputComponent;
-  private boostTimer: number = 0;
-  private readonly BOOST_DURATION = 120;
-  private readonly BOOST_SPEED = 12;
-  private readonly NORMAL_SPEED = 5;
-  private readonly BRAKE_SPEED = 2;
+  private invincibleTimer: number = 0;
+  private effectsManager: EffectsManager | null = null;
 
   constructor() {
     this.container = new Container();
@@ -46,7 +43,28 @@ export class PlayerEntity implements IPlayerEntity {
     // Không cần dùng graphics để vẽ nữa
   }
 
+  setEffectsManager(em: EffectsManager): void {
+    this.effectsManager = em;
+  }
+
+  takeDamage(): void {
+    if (this.invincibleTimer > 0) return;
+    this.invincibleTimer = 120;
+    this.effectsManager?.applyHitEffect(this.container, 120);
+  }
+
+  isInvincible(): boolean {
+    return this.invincibleTimer > 0;
+  }
+
   update(deltaTime: number, boundTop: number, boundBottom: number): void {
+    if (this.invincibleTimer > 0) {
+      this.invincibleTimer -= deltaTime;
+      if (this.invincibleTimer <= 0) {
+        this.invincibleTimer = 0;
+        this.effectsManager?.clearHitEffect(this.container);
+      }
+    }
     let dy = 0;
     let dx = 0;
 

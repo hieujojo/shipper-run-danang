@@ -1,6 +1,5 @@
 import { Container, Sprite, Texture } from "pixi.js";
-import { PLAYER_WIDTH, PLAYER_HEIGHT, CANVAS_HEIGHT } from "../core/constants";
-import { MovementComponent } from "../components/MovementComponent";
+import { PLAYER_WIDTH, PLAYER_HEIGHT } from "../core/constants";
 import { CollisionComponent } from "../components/CollisionComponent";
 import { InputComponent } from "../components/InputComponent";
 
@@ -16,12 +15,6 @@ export class PlayerEntity implements IPlayerEntity {
   private sprite: Sprite;
   collision: CollisionComponent;
   private input: InputComponent;
-  private boostTimer: number = 0;
-  private readonly BOOST_DURATION = 120;
-  private readonly BOOST_SPEED = 12;
-  private readonly NORMAL_SPEED = 5;
-  private readonly BRAKE_SPEED = 2;
-
   constructor() {
     this.container = new Container();
     this.sprite = new Sprite(Texture.from("/assets/player_shipper.png"));
@@ -42,13 +35,8 @@ export class PlayerEntity implements IPlayerEntity {
   init(x: number, y: number): void {
     this.container.x = x;
     this.container.y = y;
-    this.draw();
     // Khởi tạo bounds
     this.collision.updateBounds(x, y, PLAYER_WIDTH, PLAYER_HEIGHT);
-  }
-
-  private draw(): void {
-    // Không cần dùng graphics để vẽ nữa
   }
 
   update(deltaTime: number, boundTop: number, boundBottom: number): void {

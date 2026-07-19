@@ -57,8 +57,6 @@ npm run build
 shipper-run-danang/
 ├── src/
 │   ├── components/       # Logic & UI Components
-│   │   ├── game/         # Movement, Collision, Input (PixiJS)
-│   │   └── ui/           # HUD, MainMenu, GameOver (React)
 │   ├── core/             # Game loop, State machine, Constants
 │   ├── data/             # levelData.json (Cấu hình màn chơi)
 │   ├── entities/         # Player, Vehicle, Package, Coin
@@ -89,4 +87,4 @@ Game áp dụng cơ chế tốc độ kiểu **Subway Surfers / Temple Run**:
 | ~110s | 2.5x (MAX) | Tốc độ tối đa, giữ nguyên |
 
 - **Tốc độ khởi đầu, tốc độ tăng, ngưỡng tối đa** đều cấu hình trong `levelData.json` — không hardcode.
-- `speedMultiplier` áp dụng đồng thời lên: scroll đường, tốc độ xe địch, tần suất spawn xe.
+- `speedMultiplier` áp dụng đồng thời lên: scroll đường, tốc độ xe địch, tần suất spawn xe.

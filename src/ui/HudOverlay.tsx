@@ -7,21 +7,43 @@ interface HudOverlayProps {
   hasPackage: boolean;
 }
 
+const VOLUME_STEP = 0.1;
+
 export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
   const [volume, setVolume] = useState(1);
   const [muted, setMuted] = useState(false);
 
+  const applyVolume = (val: number) => {
+    const clamped = Math.min(1, Math.max(0, val));
+    setVolume(clamped);
+    setMuted(clamped === 0);
+    audioManager.setMasterVolume(clamped);
+  };
+
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseFloat(e.target.value);
-    setVolume(val);
-    setMuted(val === 0);
-    audioManager.setMasterVolume(val);
+    applyVolume(parseFloat(e.target.value));
   };
 
   const toggleMute = () => {
     const next = !muted;
     setMuted(next);
     audioManager.setMasterVolume(next ? 0 : volume);
+  };
+
+  const adjustVolume = (delta: number) => {
+    // Nếu đang mute mà bấm +, bỏ mute và tăng từ 0
+    const base = muted ? 0 : volume;
+    applyVolume(base + delta);
+  };
+
+  const iconButtonStyle: React.CSSProperties = {
+    background: "none",
+    border: "none",
+    color: "white",
+    fontSize: 14,
+    cursor: "pointer",
+    padding: "0 4px",
+    lineHeight: 1,
   };
 
   return (
@@ -78,17 +100,20 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       }}>
         <button
           onClick={toggleMute}
-          style={{
-            background: "none",
-            border: "none",
-            color: "white",
-            fontSize: 14,
-            cursor: "pointer",
-            padding: 0,
-          }}
+          style={iconButtonStyle}
+          aria-label={muted ? "Bật tiếng" : "Tắt tiếng"}
         >
           {muted || volume === 0 ? "🔇" : volume < 0.5 ? "🔉" : "🔊"}
         </button>
+
+        <button
+          onClick={() => adjustVolume(-VOLUME_STEP)}
+          style={iconButtonStyle}
+          aria-label="Giảm âm lượng"
+        >
+          −
+        </button>
+
         <input
           type="range"
           min={0}
@@ -102,6 +127,14 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
             cursor: "pointer",
           }}
         />
+
+        <button
+          onClick={() => adjustVolume(VOLUME_STEP)}
+          style={iconButtonStyle}
+          aria-label="Tăng âm lượng"
+        >
+          +
+        </button>
       </div>
 
       {/* Tim */}

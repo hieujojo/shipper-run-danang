@@ -61,6 +61,31 @@ export class ParticleSystem {
     this.emit(x, y, 0x2ecc71, 10);
   }
 
+  emitSpeedTrail(x: number, y: number, speedMultiplier: number): void {
+    if (speedMultiplier < 1.0) return;
+    // Khói nhẹ phía sau xe, count tăng theo tốc độ
+    const count = Math.min(3, Math.floor(speedMultiplier));
+    for (let i = 0; i < count; i++) {
+      const angle = Math.PI + (Math.random() - 0.5) * 0.5; // Hướng sang trái
+      const speed = 0.5 + Math.random() * 1.5;
+      const gfx = new Graphics();
+      const size = 2 + Math.random() * 3;
+      gfx.circle(0, 0, size);
+      gfx.fill(0xbbbbbb); // Xám khói
+      gfx.x = x - 20 + (Math.random() - 0.5) * 10;
+      gfx.y = y + (Math.random() - 0.5) * 8;
+      this.container.addChild(gfx);
+      this.particles.push({
+        gfx,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed * 0.3,
+        life: 10 + Math.random() * 8,
+        maxLife: 18,
+        color: 0xbbbbbb,
+      });
+    }
+  }
+
   update(deltaTime: number): void {
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];

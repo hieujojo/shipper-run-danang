@@ -32,11 +32,12 @@ Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn 
 ## 🛠️ Tech Stack
 
 - **Rendering:** PixiJS v8 (WebGL/Canvas cho Gameplay)
+- **Visual Effects:** PixiJS v8 Built-in Filters (BlurFilter, ColorMatrixFilter, AlphaFilter)
 - **UI Layer:** React (Menu, HUD, Game Over Screen)
 - **Build Tool:** Vite 5.x + TypeScript
 - **Audio:** Howler.js
 - **Deploy:** Vercel
-- **Graphics:** PIXI.Sprite (Pixel Art assets) kết hợp PIXI.Graphics
+- **Graphics:** PIXI.Sprite (Pixel Art assets) + PIXI.Graphics + PixiJS Filters
 
 ## 🚀 Chạy local
 

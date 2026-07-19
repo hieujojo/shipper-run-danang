@@ -6,6 +6,7 @@
 
 1. **Tech Stack cố định** — KHÔNG được thay đổi:
    - **Rendering:** PixiJS v8 (KHÔNG dùng v7, API khác hoàn toàn)
+   - **Visual Effects:** PixiJS v8 Built-in Filters (`BlurFilter`, `ColorMatrixFilter`, `AlphaFilter`, `NoiseFilter`, `DisplacementFilter`)
    - **Build Tool:** Vite 5.x (KHÔNG dùng Webpack, CRA, Next.js)
    - **Ngôn ngữ:** TypeScript (KHÔNG dùng JavaScript thuần)
    - **Audio:** Howler.js (KHÔNG dùng Web Audio API trực tiếp)
@@ -33,14 +34,20 @@ src/
 ## 🎮 2. PixiJS v8 Rules (STRICT)
 
 1. **Khuyến khích dùng PIXI.Sprite (Pixel Art)** cho các Entity (Player, Vehicle, Package) để mang lại cảm giác retro. Có thể kết hợp `PIXI.Graphics` cho các UI hoặc hiệu ứng hình học đơn giản.
-2. **Tách biệt layer rõ ràng:**
+2. **PixiJS Filters** — Dùng built-in filters của PixiJS v8 cho visual effects:
+   - `BlurFilter` — hiệu ứng mờ (va chạm, bất tử)
+   - `ColorMatrixFilter` — tint màu theo sự kiện (Cầu Rồng lửa/nước)
+   - `AlphaFilter` — fade in/out
+   - KHÔNG cài thêm `pixi-filters` package trừ khi được yêu cầu rõ ràng
+3. **Tách biệt layer rõ ràng:**
    - React layer: StartScreen, HUD (điểm, timer), GameOverScreen
-   - PixiJS layer: Player, Traffic, Map, Collision, Game Loop
+   - PixiJS layer: Player, Traffic, Map, Collision, Game Loop, Filters/Effects
    - KHÔNG dùng React để render bất cứ thứ gì trong game canvas
-3. **Game loop:** Luôn dùng `app.ticker.add()` cho game loop chính — KHÔNG dùng `requestAnimationFrame` trực tiếp.
-4. **Object Pooling bắt buộc** cho: `Coin`, `Package`, `Vehicle` — KHÔNG `new`/`destroy` liên tục trong game loop.
-5. **Collision Detection:** Dùng AABB (Axis-Aligned Bounding Box) — KHÔNG dùng thư viện physics nặng.
-6. **Container hierarchy:** Mỗi scene là một `PIXI.Container` riêng, add/remove vào `app.stage` khi chuyển scene.
+4. **Game loop:** Luôn dùng `app.ticker.add()` cho game loop chính — KHÔNG dùng `requestAnimationFrame` trực tiếp.
+5. **Object Pooling bắt buộc** cho: `Coin`, `Package`, `Vehicle` — KHÔNG `new`/`destroy` liên tục trong game loop.
+6. **Collision Detection:** Dùng AABB (Axis-Aligned Bounding Box) — KHÔNG dùng thư viện physics nặng.
+7. **Container hierarchy:** Mỗi scene là một `PIXI.Container` riêng, add/remove vào `app.stage` khi chuyển scene.
+8. **Effects Manager:** Mọi logic filter/visual effect tập trung vào `src/utils/effectsManager.ts` — KHÔNG rải filter logic khắp nơi.
 
 ---
 

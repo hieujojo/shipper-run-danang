@@ -26,7 +26,8 @@
 | `audio` | Howler.js, sound effects, music |
 | `level` | levelData.json, level progression |
 | `pool` | Object pooling |
-| `render` | PIXI.Graphics, visual effects |
+| `render` | PIXI.Graphics, visual effects, Sprite |
+| `effects` | PixiJS Filters, EffectsManager, particle system |
 | `config` | Vite config, tsconfig, env |
 
 ## Examples

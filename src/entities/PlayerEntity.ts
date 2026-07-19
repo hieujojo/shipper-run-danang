@@ -1,6 +1,5 @@
 import { Container, Sprite, Texture } from "pixi.js";
-import { PLAYER_WIDTH, PLAYER_HEIGHT, CANVAS_HEIGHT } from "../core/constants";
-import { MovementComponent } from "../components/MovementComponent";
+import { PLAYER_WIDTH, PLAYER_HEIGHT } from "../core/constants";
 import { CollisionComponent } from "../components/CollisionComponent";
 import { InputComponent } from "../components/InputComponent";
 
@@ -16,11 +15,9 @@ export class PlayerEntity implements IPlayerEntity {
   private sprite: Sprite;
   collision: CollisionComponent;
   private input: InputComponent;
-  private boostTimer: number = 0;
-  private readonly BOOST_DURATION = 120;
-  private readonly BOOST_SPEED = 12;
-  private readonly NORMAL_SPEED = 5;
-  private readonly BRAKE_SPEED = 2;
+  // Invincible frames sau va chạm
+  private invincibleTimer: number = 0;
+  private readonly INVINCIBLE_DURATION = 120; // 2 giây @ 60fps
 
   constructor() {
     this.container = new Container();
@@ -42,13 +39,9 @@ export class PlayerEntity implements IPlayerEntity {
   init(x: number, y: number): void {
     this.container.x = x;
     this.container.y = y;
-    this.draw();
-    // Khởi tạo bounds
+    this.invincibleTimer = 0;
+    this.container.alpha = 1;
     this.collision.updateBounds(x, y, PLAYER_WIDTH, PLAYER_HEIGHT);
-  }
-
-  private draw(): void {
-    // Không cần dùng graphics để vẽ nữa
   }
 
   update(deltaTime: number, boundTop: number, boundBottom: number): void {
@@ -90,7 +83,29 @@ export class PlayerEntity implements IPlayerEntity {
       this.sprite.rotation = Math.sin(Date.now() / 100) * 0.05; // Rung nhẹ liên tục
     }
 
+    // Invincible blink — nhấp nháy khi đang bất tử
+    if (this.invincibleTimer > 0) {
+      this.invincibleTimer -= deltaTime;
+      // Nhấp nháy: alpha dao động nhanh theo sin wave
+      const blink = Math.sin(this.invincibleTimer * 0.5);
+      this.container.alpha = blink > 0 ? 1.0 : 0.2;
+      if (this.invincibleTimer <= 0) {
+        this.invincibleTimer = 0;
+        this.container.alpha = 1.0;
+      }
+    }
+
     this.collision.updateBounds(this.container.x, this.container.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+  }
+
+  /** Bắt đầu invincible frames sau khi bị đâm */
+  takeDamage(): void {
+    this.invincibleTimer = this.INVINCIBLE_DURATION;
+    this.container.alpha = 0.2;
+  }
+
+  isInvincible(): boolean {
+    return this.invincibleTimer > 0;
   }
 
   resetPosition(x: number, y: number): void {

@@ -3,6 +3,7 @@ import { GameStateManager, GameState } from "./GameState";
 import { StartScene } from "../scenes/StartScene";
 import { GameplayScene } from "../scenes/GameplayScene";
 import { GameOverScene } from "../scenes/GameOverScene";
+import levelData from "../data/levelData.json";
 
 export class GameLoop {
   private app: Application;
@@ -18,6 +19,7 @@ export class GameLoop {
   onLevelChange: ((levelName: string) => void) | null = null;
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
   onLivesChange: ((lives: number) => void) | null = null;
+  onDragonEvent: ((active: boolean) => void) | null = null;
   private levelTimer: number = 0;
   private currentLevelIndex: number = 0;
   private readonly LEVEL_DURATION = 60 * 60; // 60 giây mỗi level
@@ -61,13 +63,16 @@ export class GameLoop {
             this.score += 10;
             this.onScoreUpdate?.(this.score);
           }
-          // Level progression
+         // Level progression
           this.levelTimer++;
           if (this.levelTimer >= this.LEVEL_DURATION) {
             this.levelTimer = 0;
-            this.currentLevelIndex = (this.currentLevelIndex + 1) % 3;
-            const levelNames = ["Đại lộ Phạm Văn Đồng", "Ngã tư Ngô Quyền", "Cầu Rồng"];
-            this.onLevelChange?.(levelNames[this.currentLevelIndex]);
+            this.currentLevelIndex = (this.currentLevelIndex + 1) % levelData.levels.length;
+            const level = levelData.levels[this.currentLevelIndex];
+            this.onLevelChange?.(level.name);
+            this.gameplayScene.setLevel(this.currentLevelIndex);
+            this.onDragonEvent?.(level.isDragonEvent);
+            this.gameplayScene.triggerDragonEvent(level.isDragonEvent);
           }
           break;
         case GameState.GAME_OVER:
@@ -86,9 +91,15 @@ export class GameLoop {
     if (state === GameState.GAMEPLAY) {
       this.levelTimer = 0;
       this.currentLevelIndex = 0;
-      this.onLevelChange?.("Đại lộ Phạm Văn Đồng");
+      const firstLevel = levelData.levels[0];
+     this.onLevelChange?.(firstLevel.name);
+      this.onDragonEvent?.(firstLevel.isDragonEvent);
     }
     this.loadScene(state);
+    if (state === GameState.GAMEPLAY) {
+      const firstLevel = levelData.levels[0];
+      this.gameplayScene.triggerDragonEvent(firstLevel.isDragonEvent);
+    }
   }
 
   private loadScene(state: GameState): void {

@@ -2,6 +2,7 @@ import { Container, Sprite, Texture } from "pixi.js";
 import { PLAYER_WIDTH, PLAYER_HEIGHT } from "../core/constants";
 import { CollisionComponent } from "../components/CollisionComponent";
 import { InputComponent } from "../components/InputComponent";
+import { EffectsManager } from "../utils/effectsManager";
 
 export interface IPlayerEntity {
   container: Container;
@@ -17,6 +18,7 @@ export class PlayerEntity implements IPlayerEntity {
   private input: InputComponent;
   // Invincible frames sau va chạm
   private invincibleTimer: number = 0;
+  private effectsManager: EffectsManager | null = null;
   private readonly INVINCIBLE_DURATION = 120; // 2 giây @ 60fps
 
   constructor() {
@@ -96,6 +98,10 @@ export class PlayerEntity implements IPlayerEntity {
     }
 
     this.collision.updateBounds(this.container.x, this.container.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+  }
+
+setEffectsManager(em: EffectsManager): void {
+    this.effectsManager = em;
   }
 
   /** Bắt đầu invincible frames sau khi bị đâm */

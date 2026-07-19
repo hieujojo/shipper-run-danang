@@ -35,7 +35,8 @@ function App() {
       await Assets.load([
         "/assets/player_shipper.png",
         "/assets/vehicle_car.png",
-        "/assets/package_box.png"
+        "/assets/package_box.png",
+        "/assets/dragon_bridge.png"
       ]);
 
       if (containerRef.current) {

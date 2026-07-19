@@ -141,6 +141,8 @@ let state = "start";
 2. Độ khó tăng theo `rushHourTimer` — KHÔNG hardcode difficulty.
 3. Địa danh hiện tại: `Phạm Văn Đồng`, `Ngã tư Ngô Quyền`, `Cầu Rồng`.
 4. Thêm địa danh mới (Hội An, Huế...) chỉ cần thêm vào `levelData.json` — KHÔNG sửa engine.
+5. **Asset địa danh:** Mỗi địa danh có visual event BẮT BUỘC có PNG nền trong suốt đặt tại `public/assets/`. Thêm vào `Assets.load()` trong `main.tsx` trước khi dùng.
+6. **Thứ tự layer địa danh:** Dragon/Landmark sprite LUÔN nằm giữa `baseEnvironment` và `roadContainer` — dùng `getChildIndex` thay vì hardcode index.
 
 ---
 

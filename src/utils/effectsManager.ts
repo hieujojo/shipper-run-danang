@@ -1,4 +1,4 @@
-﻿import { Container, BlurFilter, ColorMatrixFilter } from ""pixi.js"";
+﻿import { Container, BlurFilter, ColorMatrixFilter } from "pixi.js";
 
 interface HitEffect {
   container: Container;

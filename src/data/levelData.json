@@ -2,7 +2,25 @@
   "levels": [
     {
       "id": 1,
+      "key": "cau-rong",
+      "name": "Cầu Rồng",
+      "isDragonEvent": true,
+      "assetPath": "/assets/dragon_bridge.png",
+      "difficulty": "event",
+      "laneCount": 3,
+      "baseSpeed": 6,
+      "trafficDensity": 0.6,
+      "rushHourMultiplier": 2.5,
+      "initialMultiplier": 0.5,
+      "speedIncreaseRate": 0.03,
+      "maxSpeedMultiplier": 3.5
+    },
+    {
+      "id": 2,
+      "key": "pham-van-dong",
       "name": "Đại lộ Phạm Văn Đồng",
+      "isDragonEvent": false,
+      "assetPath": "",
       "difficulty": "low",
       "laneCount": 4,
       "baseSpeed": 3,
@@ -13,8 +31,11 @@
       "maxSpeedMultiplier": 2.5
     },
     {
-      "id": 2,
+      "id": 3,
+      "key": "ngo-quyen",
       "name": "Ngã tư Ngô Quyền",
+      "isDragonEvent": false,
+      "assetPath": "",
       "difficulty": "high",
       "laneCount": 3,
       "baseSpeed": 5,
@@ -23,18 +44,6 @@
       "initialMultiplier": 0.4,
       "speedIncreaseRate": 0.025,
       "maxSpeedMultiplier": 3.0
-    },
-    {
-      "id": 3,
-      "name": "Cầu Rồng",
-      "difficulty": "event",
-      "laneCount": 3,
-      "baseSpeed": 6,
-      "trafficDensity": 0.6,
-      "rushHourMultiplier": 2.5,
-      "initialMultiplier": 0.5,
-      "speedIncreaseRate": 0.03,
-      "maxSpeedMultiplier": 3.5
     }
   ]
 }

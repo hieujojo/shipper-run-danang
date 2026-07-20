@@ -315,7 +315,7 @@ export class GameplayScene {
     this.particles.update(deltaTime);
     this.effects.update(deltaTime);
 
-    if (this.speedMultiplier > 1.2) {
+    if (this.speedMultiplier > 0.8) {
       this.particles.emitSpeedTrail(
         this.player.container.x - 25,
         this.player.container.y,

@@ -62,7 +62,7 @@ export class ParticleSystem {
   }
 
  emitSpeedTrail(x: number, y: number, speedMultiplier: number): void {
-    if (speedMultiplier <= 1.2) return;
+    if (speedMultiplier <= 0.8) return;
     const count = Math.floor(speedMultiplier * 2);
     for (let i = 0; i < count; i++) {
       const size = 6 + Math.random() * 8;

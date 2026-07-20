@@ -12,7 +12,7 @@ import { ParticleSystem } from "../utils/particleSystem";
 import { EffectsManager } from "../utils/effectsManager";
 import { PackageEntity } from "../entities/PackageEntity";
 import { DeliveryPointEntity } from "../entities/DeliveryPointEntity";
-import { DragonEventScene } from "./DragonEventScene";
+import { LandmarkEventScene, type LandmarkEventConfig } from "./LandmarkEventScene";
 import levelData from "../data/levelData.json";
 
 export class GameplayScene {
@@ -36,7 +36,7 @@ export class GameplayScene {
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
   private particles!: ParticleSystem;
   private effects!: EffectsManager;
-  private dragonEvent!: DragonEventScene;
+  private dragonEvent!: LandmarkEventScene;
   private isDragonEvent: boolean = false;
   private speedOverride: number = 1.0;
   private dragonBreathType: string | null = null;
@@ -138,7 +138,7 @@ export class GameplayScene {
     this.particles = new ParticleSystem();
     this.container.addChild(this.particles.container);
 
-    this.dragonEvent = new DragonEventScene();
+    this.dragonEvent = new LandmarkEventScene();
     this.isDragonEvent = false;
     this.speedOverride = 1.0;
   }
@@ -163,15 +163,18 @@ export class GameplayScene {
 
   private startDragonEvent(): void {
     this.isDragonEvent = true;
-    const level = levelData.levels[this.currentLevelIndex];
-    this.dragonEvent.init(level.assetPath);
+    const level = levelData.levels[this.currentLevelIndex ?? 0];
+    const cfg: LandmarkEventConfig = {
+      assetPath: level.assetPath,
+      scaleMultiplier: level.landmarkEvent?.scaleMultiplier ?? 1.3,
+      yOffsetRatio: level.landmarkEvent?.yOffsetRatio ?? 0.25,
+      breathEffect: (level.landmarkEvent?.breathEffect as "fire" | "water" | null) ?? null,
+    };
+    this.dragonEvent.init(cfg);
     const roadIdx = this.container.getChildIndex(this.roadContainer);
     this.container.addChildAt(this.dragonEvent.container, roadIdx);
     this.dragonEvent.onBreathEffect = (type) => {
       this.dragonBreathType = type;
-    };
-    this.dragonEvent.onSpeedChange = (multiplier) => {
-      this.speedOverride = multiplier;
     };
   }
 

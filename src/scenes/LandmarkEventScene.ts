@@ -13,8 +13,8 @@ export interface LandmarkEventConfig {
 export class LandmarkEventScene {
   container: Container;
   private dragon!: DragonEntity;
-  private spriteTop!: Sprite;
-  private spriteBottom!: Sprite;
+  private topContainer!: Container;
+  private bottomContainer!: Container;
   private effects: EffectsManager;
   active: boolean = false;
 
@@ -40,23 +40,32 @@ export class LandmarkEventScene {
     const scaleX = CANVAS_WIDTH / tex.width;
     const scaledH = tex.height * scaleX * scaleMultiplier;
 
-    // Dải trên
-    this.spriteTop = new Sprite(tex);
-    this.spriteTop.width = CANVAS_WIDTH;
-    this.spriteTop.height = scaledH;
-    this.spriteTop.x = 0;
-    this.spriteTop.y = -scaledH * yOffsetRatio;
-    this.container.addChild(this.spriteTop);
+    this.topContainer = new Container();
+    this.topContainer.y = -scaledH * yOffsetRatio;
+    this.container.addChild(this.topContainer);
+
+    for (let i = 0; i < 2; i++) {
+      const s = new Sprite(tex);
+      s.width = CANVAS_WIDTH;
+      s.height = scaledH;
+      s.x = i * CANVAS_WIDTH;
+      this.topContainer.addChild(s);
+    }
 
     // Dải dưới — flip Y
-    this.spriteBottom = new Sprite(tex);
-    this.spriteBottom.width = CANVAS_WIDTH;
-    this.spriteBottom.height = scaledH;
-    this.spriteBottom.anchor.set(0, 1);
-    this.spriteBottom.scale.y = -1;
-    this.spriteBottom.x = 0;
-    this.spriteBottom.y = CANVAS_HEIGHT + scaledH * yOffsetRatio;
-    this.container.addChild(this.spriteBottom);
+    this.bottomContainer = new Container();
+    this.bottomContainer.y = CANVAS_HEIGHT + scaledH * yOffsetRatio;
+    this.container.addChild(this.bottomContainer);
+
+    for (let i = 0; i < 2; i++) {
+      const s = new Sprite(tex);
+      s.width = CANVAS_WIDTH;
+      s.height = scaledH;
+      s.anchor.set(0, 1);
+      s.scale.y = -1;
+      s.x = i * CANVAS_WIDTH;
+      this.bottomContainer.addChild(s);
+    }
 
     // Dragon logic — chỉ dùng khi có breathEffect
     if (breathEffect) {
@@ -85,8 +94,8 @@ export class LandmarkEventScene {
 
   scroll(roadOffset: number): void {
     const parallax = roadOffset * 0.4;
-    this.spriteTop.x = parallax % CANVAS_WIDTH;
-    this.spriteBottom.x = parallax % CANVAS_WIDTH;
+    this.topContainer.x = parallax % CANVAS_WIDTH;
+    this.bottomContainer.x = parallax % CANVAS_WIDTH;
   }
 
   update(deltaTime: number): void {

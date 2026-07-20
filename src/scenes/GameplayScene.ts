@@ -256,7 +256,7 @@ export class GameplayScene {
     const GAP = 8;
 
     let xTop = -200;
-    while (xTop < CANVAS_WIDTH + 200) {
+    while (xTop < CANVAS_WIDTH * 2 + 200) {
       const w = 60 + Math.random() * 100;
       const h = CANVAS_HEIGHT * 0.15;
       const color = buildingColors[Math.floor(Math.random() * buildingColors.length)];
@@ -274,7 +274,7 @@ export class GameplayScene {
     }
 
     let xBottom = -150;
-    while (xBottom < CANVAS_WIDTH + 200) {
+    while (xBottom < CANVAS_WIDTH * 2 + 200) {
       const w = 60 + Math.random() * 100;
       const h = CANVAS_HEIGHT * 0.15;
       const color = buildingColors[Math.floor(Math.random() * buildingColors.length)];

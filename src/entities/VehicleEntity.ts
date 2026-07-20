@@ -7,7 +7,7 @@ export interface IVehicleEntity {
   container: Container;
   active: boolean;
   init(x: number, y: number, speed: number): void;
-  update(deltaTime: number): void;
+  update(deltaTime: number, currentSpeed?: number): void;
   reset(): void;
 }
 
@@ -47,9 +47,10 @@ export class VehicleEntity implements IVehicleEntity {
     // Bỏ qua vì đã dùng Sprite
   }
 
-  update(deltaTime: number): void {
+  update(deltaTime: number, currentSpeed?: number): void {
     if (!this.active) return;
-    this.container.x += this.speed * deltaTime;
+    const s = currentSpeed !== undefined ? currentSpeed : this.speed;
+    this.container.x += s * deltaTime;
     
     // Animation: Xe cộ cũng nhún nhảy theo Y
     this.sprite.y = Math.sin(Date.now() / 150 + this.container.x) * 2;

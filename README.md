@@ -11,15 +11,15 @@
 
 **Shipper Run Đà Nẵng** là game đua xe giao hàng thể loại Endless Runner cuộn ngang (Side-scroller) mang phong cách **Pixel Art**, chạy trên trình duyệt web. Game kết hợp sức mạnh render mượt mà của **PixiJS v8** cho phần gameplay và **React** cho lớp giao diện người dùng (UI Layer).
 
-Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn trên các tuyến đường biểu tượng của Đà Nẵng — từ Đại lộ Phạm Văn Đồng đến Cầu Rồng huyền thoại. Mọi asset hình ảnh đều được tối ưu cho cảm giác retro hoài cổ.
+Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn trên các cầu biểu tượng của Đà Nẵng — từ Cầu Sông Hàn lung linh đến Cầu Rồng huyền thoại. Mọi asset hình ảnh đều được tối ưu cho cảm giác retro hoài cổ.
 
 ## 🗺️ Địa danh trong game
 
 | Địa danh | Độ khó | Đặc điểm |
 |---|---|---|
-| Đại lộ Phạm Văn Đồng | ⭐ Thấp | Đường rộng, nhập môn |
-| Ngã tư Ngô Quyền | ⭐⭐⭐ Cao | Đường hẹp, giao thông hỗn loạn |
-| Cầu Rồng | 🐉 Sự kiện | PNG sprite Cầu Rồng thực tế, rồng phun lửa/nước — lửa tăng xe, nước tăng package |
+| Cầu Rồng | 🐉 Sự kiện | PNG sprite thực tế, rồng phun lửa/nước — lửa tăng xe, nước tăng package |
+| Cầu Sông Hàn | ⭐⭐ Trung | PNG sprite cầu quay đèn LED xanh, UI landmark event |
+| Cầu Trần Thị Lý | ⭐⭐⭐ Cao | PNG sprite tháp cao bất đối xứng, UI landmark event |
 
 ## 🕹️ Điều khiển
 
@@ -109,20 +109,28 @@ Chỉ cần thêm vào `src/data/levelData.json` — không cần sửa engine:
 \`\`\`json
 {
   "id": 4,
-  "key": "cau-song-han",
-  "name": "Cầu Sông Hàn",
-  "isDragonEvent": false,
+  "key": "ten-dia-danh",
+  "name": "Tên Địa Danh",
+  "isLandmarkEvent": true,
+  "assetPath": "/assets/ten-dia-danh_landmark.png",
   "difficulty": "medium",
   "laneCount": 3,
   "baseSpeed": 4,
   "trafficDensity": 0.5,
-  "initialMultiplier": 0.8,
+  "initialMultiplier": 0.7,
   "speedIncreaseRate": 0.022,
-  "maxSpeedMultiplier": 3.0
+  "maxSpeedMultiplier": 3.0,
+  "landmarkEvent": {
+    "scaleMultiplier": 1.3,
+    "yOffsetRatio": 0.25,
+    "breathEffect": null
+  }
 }
 \`\`\`
+
+> **Lưu ý:** `laneCount` luôn cố định **3** — không thay đổi.
 
 Để thêm **landmark có visual event** (như Cầu Rồng):
 1. Tạo PNG asset nền trong suốt → đặt vào `public/assets/`
 2. Thêm vào `Assets.load()` trong `src/main.tsx`
-3. Khai báo `isDragonEvent: true` và asset path trong `levelData.json`
+3. Khai báo `isLandmarkEvent: true` và asset path trong `levelData.json`

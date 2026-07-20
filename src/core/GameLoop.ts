@@ -19,7 +19,7 @@ export class GameLoop {
   onLevelChange: ((levelName: string) => void) | null = null;
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
   onLivesChange: ((lives: number) => void) | null = null;
-  onDragonEvent: ((active: boolean) => void) | null = null;
+  onLandmarkEvent: ((active: boolean) => void) | null = null;
   private levelTimer: number = 0;
   private currentLevelIndex: number = 0;
   private readonly LEVEL_DURATION = 60 * 60; // 60 giây mỗi level
@@ -71,8 +71,8 @@ export class GameLoop {
             const level = levelData.levels[this.currentLevelIndex];
             this.onLevelChange?.(level.name);
             this.gameplayScene.setLevel(this.currentLevelIndex);
-            this.onDragonEvent?.(level.isDragonEvent);
-            this.gameplayScene.triggerDragonEvent(level.isDragonEvent);
+            this.onLandmarkEvent?.(level.isLandmarkEvent);
+            this.gameplayScene.triggerLandmarkEvent(level.isLandmarkEvent);
           }
           break;
         case GameState.GAME_OVER:
@@ -93,12 +93,12 @@ export class GameLoop {
       this.currentLevelIndex = 0;
       const firstLevel = levelData.levels[0];
      this.onLevelChange?.(firstLevel.name);
-      this.onDragonEvent?.(firstLevel.isDragonEvent);
+      this.onLandmarkEvent?.(firstLevel.isLandmarkEvent);
     }
     this.loadScene(state);
     if (state === GameState.GAMEPLAY) {
       const firstLevel = levelData.levels[0];
-      this.gameplayScene.triggerDragonEvent(firstLevel.isDragonEvent);
+      this.gameplayScene.triggerLandmarkEvent(firstLevel.isLandmarkEvent);
     }
   }
 

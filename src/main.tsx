@@ -36,7 +36,9 @@ function App() {
         "/assets/player_shipper.png",
         "/assets/vehicle_car.png",
         "/assets/package_box.png",
-        "/assets/dragon_bridge.png"
+        "/assets/cau-rong-landmark.png",
+        "/assets/cau-song-han_landmark.png",
+        "/assets/cau-tran-thi-ly_landmark.png",
       ]);
 
       if (containerRef.current) {

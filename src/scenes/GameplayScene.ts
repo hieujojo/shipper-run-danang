@@ -48,6 +48,7 @@ export class GameplayScene {
   private initialMultiplier: number = INITIAL_MULTIPLIER;
   private speedIncreaseRate: number = SPEED_INCREASE_RATE;
   private maxSpeedMultiplier: number = MAX_SPEED_MULTIPLIER;
+  private baseVehicleSpeed: number = 5;
   onGameOver: (() => void) | null = null;
   onLivesChange: ((lives: number) => void) | null = null;
   private lives: number = 3;
@@ -73,6 +74,7 @@ export class GameplayScene {
     this.initialMultiplier = levelCfg.initialMultiplier;
     this.speedIncreaseRate = levelCfg.speedIncreaseRate;
     this.maxSpeedMultiplier = levelCfg.maxSpeedMultiplier;
+    this.baseVehicleSpeed = levelCfg.baseSpeed || 5;
     this.speedMultiplier = this.initialMultiplier;
     this.elapsedTime = 0;
     this.roadOffset = 0;
@@ -149,6 +151,7 @@ export class GameplayScene {
     this.initialMultiplier = cfg.initialMultiplier;
     this.speedIncreaseRate = cfg.speedIncreaseRate;
     this.maxSpeedMultiplier = cfg.maxSpeedMultiplier;
+    this.baseVehicleSpeed = cfg.baseSpeed || 5;
     this.speedMultiplier = cfg.initialMultiplier;
     this.elapsedTime = 0;
   }
@@ -354,9 +357,11 @@ export class GameplayScene {
       this.spawnVehicle();
     }
 
+    const currentVehicleSpeed = -this.baseVehicleSpeed * this.speedMultiplier;
+
     for (let i = this.activeVehicles.length - 1; i >= 0; i--) {
       const vehicle = this.activeVehicles[i];
-      vehicle.update(deltaTime);
+      vehicle.update(deltaTime, currentVehicleSpeed);
 
       if (
         this.player.collision.checkCollision(vehicle.collision.bounds) &&
@@ -386,41 +391,31 @@ export class GameplayScene {
         this.activeVehicles.splice(i, 1);
       }
     }
-
-    const MIN_GAP = 20;
-    const MIN_CENTER_DIST = PLAYER_WIDTH * 1.5 + MIN_GAP;
-    const SAME_LANE = 10;
-
-    this.activeVehicles.sort((a, b) => b.container.x - a.container.x);
-
-    for (let i = 0; i < this.activeVehicles.length - 1; i++) {
-      const rightVeh = this.activeVehicles[i];
-      const leftVeh = this.activeVehicles[i + 1];
-
-      if (Math.abs(rightVeh.container.y - leftVeh.container.y) > SAME_LANE) continue;
-
-      if (rightVeh.container.x - leftVeh.container.x < MIN_CENTER_DIST) {
-        rightVeh.container.x = leftVeh.container.x + MIN_CENTER_DIST;
-        rightVeh.collision.bounds.x = rightVeh.container.x - PLAYER_WIDTH / 2;
-      }
-    }
   }
 
   private spawnVehicle(): void {
-    const lane = Math.floor(Math.random() * LANE_COUNT);
-    const y = this.lanePositions[lane];
     const x = CANVAS_WIDTH + 100;
+    const MIN_SAFE_DIST = 200; // Đảm bảo luôn có khoảng cách 200px (khoảng 4 lần chiều dài player) để lách
+    const safeLanes = [];
 
-    const baseSpeed = MIN_VEHICLE_SPEED + Math.random() * (MAX_VEHICLE_SPEED - MIN_VEHICLE_SPEED);
-    const speed = baseSpeed * this.speedMultiplier;
+    // Tìm các lane không có xe nào ở quá gần
+    for (let l = 0; l < LANE_COUNT; l++) {
+      const ly = this.lanePositions[l];
+      const tooClose = this.activeVehicles.some(
+        (v) => Math.abs(v.container.y - ly) < 10 && Math.abs(v.container.x - x) < MIN_SAFE_DIST
+      );
+      if (!tooClose) safeLanes.push(l);
+    }
 
-    const tooClose = this.activeVehicles.some(
-      (v) => Math.abs(v.container.y - y) < 10 && Math.abs(v.container.x - x) < PLAYER_WIDTH * 1.5 + 20
-    );
-    if (tooClose) return;
+    // Nếu cả 3 làn đều bị kẹt (hoặc không đủ khoảng cách an toàn), skip nhịp spawn này luôn
+    if (safeLanes.length === 0) return;
+
+    // Chỉ random vào những làn an toàn
+    const lane = safeLanes[Math.floor(Math.random() * safeLanes.length)];
+    const y = this.lanePositions[lane];
 
     const vehicle = this.vehiclePool.get();
-    vehicle.init(x, y, -speed);
+    vehicle.init(x, y, 0); // Speed sẽ được truyền qua update() để đảm bảo đồng tốc
     this.activeVehicles.push(vehicle);
   }
 

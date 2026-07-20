@@ -26,7 +26,8 @@
 | `audio` | Howler.js, sound effects, music |
 | `level` | levelData.json, level progression |
 | `pool` | Object pooling |
-| `render` | PIXI.Graphics, visual effects |
+| `render` | PIXI.Graphics, visual effects, Sprite |
+| `effects` | PixiJS Filters, EffectsManager, particle system |
 | `config` | Vite config, tsconfig, env |
 
 ## Examples
@@ -39,6 +40,6 @@ feat(ui): thêm HUD hiển thị điểm và timer
 test(collision): thêm test case cho AABB boundary edge cases
 
 ## Rules
-1. Subject dùng tiếng Việt hoặc tiếng Anh, nhất quán trong 1 PR
+1. Subject dùng tiếng Anh, nhất quán trong 1 PR
 2. Subject KHÔNG viết hoa chữ đầu
 3. Subject KHÔNG có dấu chấm cuối

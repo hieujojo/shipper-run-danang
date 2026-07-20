@@ -61,6 +61,30 @@ export class ParticleSystem {
     this.emit(x, y, 0x2ecc71, 10);
   }
 
+ emitSpeedTrail(x: number, y: number, speedMultiplier: number): void {
+    if (speedMultiplier <= 0.8) return;
+    const count = Math.floor(speedMultiplier * 2);
+    for (let i = 0; i < count; i++) {
+      const size = 6 + Math.random() * 8;
+      const gfx = new Graphics();
+      gfx.circle(0, 0, size);
+      gfx.fill(0xcccccc);
+      // Tọa độ world: phía sau xe (bên trái), scatter nhẹ theo Y
+      gfx.x = x - 30 - Math.random() * 15;
+      gfx.y = y + (Math.random() - 0.5) * 16;
+      gfx.alpha = 0.45 + Math.random() * 0.2;
+      this.container.addChild(gfx);
+      this.particles.push({
+        gfx,
+        vx: -(2 + Math.random() * 3),// drift sang phải (ngược chiều xe)
+        vy: (Math.random() - 0.5) * 0.8,
+        life: 12 + Math.random() * 6,
+        maxLife: 18,
+        color: 0xcccccc,
+      });
+    }
+  }
+
   update(deltaTime: number): void {
     for (let i = this.particles.length - 1; i >= 0; i--) {
       const p = this.particles[i];

@@ -36,10 +36,10 @@ export class GameplayScene {
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
   private particles!: ParticleSystem;
   private effects!: EffectsManager;
-  private dragonEvent!: LandmarkEventScene;
-  private isDragonEvent: boolean = false;
+  private landmarkEvent!: LandmarkEventScene;
+  private isLandmarkEvent: boolean = false;
   private speedOverride: number = 1.0;
-  private dragonBreathType: string | null = null;
+  private landmarkBreathType: string | null = null;
   private readonly DRAGON_FIRE_SPAWN_BOOST = 2;
   private readonly DRAGON_WATER_PACKAGE_BOOST = 3;
   private currentLevelIndex: number = 0;
@@ -138,8 +138,8 @@ export class GameplayScene {
     this.particles = new ParticleSystem();
     this.container.addChild(this.particles.container);
 
-    this.dragonEvent = new LandmarkEventScene();
-    this.isDragonEvent = false;
+    this.landmarkEvent = new LandmarkEventScene();
+    this.isLandmarkEvent = false;
     this.speedOverride = 1.0;
   }
 
@@ -153,16 +153,19 @@ export class GameplayScene {
     this.elapsedTime = 0;
   }
 
-  triggerDragonEvent(active: boolean): void {
-    if (active && !this.isDragonEvent) {
-      this.startDragonEvent();
-    } else if (!active && this.isDragonEvent) {
-      this.stopDragonEvent();
+  triggerLandmarkEvent(active: boolean): void {
+    if (active) {
+      if (this.isLandmarkEvent) {
+        this.stopLandmarkEvent();
+      }
+      this.startLandmarkEvent();
+    } else if (!active && this.isLandmarkEvent) {
+      this.stopLandmarkEvent();
     }
   }
 
-  private startDragonEvent(): void {
-    this.isDragonEvent = true;
+  private startLandmarkEvent(): void {
+    this.isLandmarkEvent = true;
     const level = levelData.levels[this.currentLevelIndex ?? 0];
     const cfg: LandmarkEventConfig = {
       assetPath: level.assetPath,
@@ -170,19 +173,19 @@ export class GameplayScene {
       yOffsetRatio: level.landmarkEvent?.yOffsetRatio ?? 0.25,
       breathEffect: (level.landmarkEvent?.breathEffect as "fire" | "water" | null) ?? null,
     };
-    this.dragonEvent.init(cfg);
+    this.landmarkEvent.init(cfg);
     const roadIdx = this.container.getChildIndex(this.roadContainer);
-    this.container.addChildAt(this.dragonEvent.container, roadIdx);
-    this.dragonEvent.onBreathEffect = (type) => {
-      this.dragonBreathType = type;
+    this.container.addChildAt(this.landmarkEvent.container, roadIdx);
+    this.landmarkEvent.onBreathEffect = (type) => {
+      this.landmarkBreathType = type;
     };
   }
 
-  private stopDragonEvent(): void {
-    this.isDragonEvent = false;
-    this.dragonBreathType = null;
+  private stopLandmarkEvent(): void {
+    this.isLandmarkEvent = false;
+    this.landmarkBreathType = null;
     this.speedOverride = 1.0;
-    this.dragonEvent.destroy();
+    this.landmarkEvent.destroy();
   }
 
   private spawnPackage(): void {
@@ -238,7 +241,7 @@ export class GameplayScene {
     }
 
     if (!this.hasPackage && !this.package?.active) {
-      const waterBoost = this.dragonBreathType === "water" ? this.DRAGON_WATER_PACKAGE_BOOST : 1;
+      const waterBoost = this.landmarkBreathType === "water" ? this.DRAGON_WATER_PACKAGE_BOOST : 1;
       this.deliveryTimer += deltaTime * waterBoost;
       if (this.deliveryTimer >= this.DELIVERY_INTERVAL) {
         this.deliveryTimer = 0;
@@ -326,9 +329,9 @@ export class GameplayScene {
       );
     }
 
-    if (this.isDragonEvent) {
-      this.dragonEvent.update(deltaTime);
-      this.dragonEvent.scroll(this.roadOffset);
+    if (this.isLandmarkEvent) {
+      this.landmarkEvent.update(deltaTime);
+      this.landmarkEvent.scroll(this.roadOffset);
     }
 
     const currentScrollSpeed = BASE_SCROLL_SPEED * this.speedMultiplier * this.speedOverride * deltaTime;
@@ -343,7 +346,7 @@ export class GameplayScene {
 
     this.roadContainer.x = this.roadOffset % 40;
 
-    const fireBoost = this.dragonBreathType === "fire" ? this.DRAGON_FIRE_SPAWN_BOOST : 1;
+    const fireBoost = this.landmarkBreathType === "fire" ? this.DRAGON_FIRE_SPAWN_BOOST : 1;
     const dynamicInterval = Math.max(10, Math.floor(SPAWN_INTERVAL / this.speedMultiplier / fireBoost));
     this.spawnTimer++;
     if (this.spawnTimer >= dynamicInterval) {
@@ -425,7 +428,7 @@ export class GameplayScene {
     this.player?.destroy();
     this.particles.clear();
     this.effects.destroy();
-    this.dragonEvent?.destroy();
+    this.landmarkEvent?.destroy();
     audioManager.stopEngine();
     this.container.removeChildren();
   }

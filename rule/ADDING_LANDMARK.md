@@ -26,16 +26,28 @@ levelData.json
 - **Kích thước tối thiểu:** 1280px chiều rộng
 - **Nội dung:** Chỉ công trình, không có trời/nước/người
 
-### Prompt AI tạo ảnh (template)
+### Prompt AI tạo ảnh (Pixel Art Style)
+
+Để hình ảnh đồng nhất với phong cách của game, nên sử dụng phong cách **Pixel Art**. Dưới đây là các câu prompt mẫu:
+
+**1. Cầu Trần Thị Lý (Tháp nghiêng cánh buồm):**
+```text
+Tran Thi Ly Bridge in Da Nang Vietnam, pixel art style, 16-bit retro arcade game asset, cable-stayed bridge with a single tall inclined pylon looking like a ship's sail, ultra-wide panoramic side view, full bridge structure from left to right edge, pink and purple LED lights, night scene, transparent background PNG, flat 2D side-scroller game asset, no sky, no water, clean cutout isolated only
 ```
-[Tên công trình] in Da Nang Vietnam,
-ultra-wide panoramic side view,
-full structure visible from left to right edge,
-[mô tả màu sắc đặc trưng] illuminated,
-night scene, transparent background PNG,
-no sky, no water, no reflections, no people,
-structure fills entire horizontal frame,
-clean cutout isolated only
+
+**2. Cầu Sông Hàn (Cầu quay):**
+```text
+Han River Bridge in Da Nang Vietnam, pixel art style, 16-bit retro arcade game asset, rotating bridge design, ultra-wide panoramic side view, full bridge structure from left to right edge, white and blue LED lights, night scene, transparent background PNG, flat 2D side-scroller game asset, no sky, no water, clean cutout isolated only
+```
+
+**3. Cầu Rồng (Cầu hình rồng):**
+```text
+Dragon Bridge in Da Nang Vietnam, pixel art style, 16-bit retro arcade game asset, bridge shaped like a golden dragon, ultra-wide panoramic side view, full bridge structure from left to right edge, yellow and orange LED lights, night scene, transparent background PNG, flat 2D side-scroller game asset, no sky, no water, clean cutout isolated only
+```
+
+**4. Template chung cho địa danh khác:**
+```text
+[Tên công trình] in Da Nang Vietnam, pixel art style, 16-bit retro arcade game asset, ultra-wide panoramic side view, full structure visible from left to right edge, [mô tả màu sắc/đặc điểm] illuminated, night scene, transparent background PNG, flat 2D side-scroller game asset, no sky, no water, no reflections, no people, clean cutout isolated only
 ```
 
 ### Xóa nền
@@ -58,10 +70,10 @@ Mở `src/data/levelData.json`, thêm object mới vào mảng `levels[]`:
 ```json
 {
   "id": 4,
-  "key": "cau-song-han",
-  "name": "Cầu Sông Hàn",
-  "isDragonEvent": true,
-  "assetPath": "/assets/cau-song-han_landmark.png",
+  "key": "ten-dia-danh",
+  "name": "Tên Địa Danh",
+  "isLandmarkEvent": true,
+  "assetPath": "/assets/ten-dia-danh_landmark.png",
   "difficulty": "medium",
   "laneCount": 3,
   "baseSpeed": 4,
@@ -73,16 +85,18 @@ Mở `src/data/levelData.json`, thêm object mới vào mảng `levels[]`:
   "landmarkEvent": {
     "scaleMultiplier": 1.3,
     "yOffsetRatio": 0.25,
-    "breathEffect": "fire"
+    "breathEffect": null
   }
 }
 ```
+
+> **Lưu ý:** `laneCount` luôn cố định **3** — không thay đổi giá trị này. `breathEffect` có thể là `"fire"`, `"water"`, hoặc `null` (không có hiệu ứng).
 
 ### Giải thích các field
 
 | Field | Mô tả | Giá trị mặc định |
 |---|---|---|
-| `isDragonEvent` | Có hiển thị landmark sprite không | `false` |
+| `isLandmarkEvent` | Có hiển thị landmark sprite không | `false` |
 | `assetPath` | Đường dẫn PNG | `""` |
 | `landmarkEvent.scaleMultiplier` | Nhân thêm vào scale (1.0 = vừa canvas) | `1.3` |
 | `landmarkEvent.yOffsetRatio` | Đẩy ảnh lên bao nhiêu % scaledH | `0.25` |
@@ -120,7 +134,8 @@ Không cần sửa thêm file nào. Engine sẽ tự:
 
 | Địa danh | Key | breathEffect | Ghi chú |
 |---|---|---|---|
-| Cầu Sông Hàn | `cau-song-han` | `"water"` | Cầu quay, đèn LED xanh |
+| Cầu Sông Hàn | `cau-song-han` | `null` | Cầu quay, đèn LED xanh — UI landmark, không breathEffect |
+| Cầu Trần Thị Lý | `cau-tran-thi-ly` | `null` | Tháp cao bất đối xứng — UI landmark, không breathEffect |
 | Bà Nà Hills | `ba-na-hills` | `"fire"` | Cầu Vàng, mây mù |
 | Chợ Hàn | `cho-han` | `null` | Không có breath effect |
 | Ngũ Hành Sơn | `ngu-hanh-son` | `"water"` | Núi đá huyền bí |

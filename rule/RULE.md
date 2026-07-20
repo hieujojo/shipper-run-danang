@@ -139,10 +139,11 @@ let state = "start";
 
 1. Mỗi level map với 1 địa danh Đà Nẵng thực tế.
 2. Độ khó tăng theo `rushHourTimer` — KHÔNG hardcode difficulty.
-3. Địa danh hiện tại: `Phạm Văn Đồng`, `Ngã tư Ngô Quyền`, `Cầu Rồng`.
-4. Thêm địa danh mới (Hội An, Huế...) chỉ cần thêm vào `levelData.json` — KHÔNG sửa engine.
-5. **Asset địa danh:** Mỗi địa danh có visual event BẮT BUỘC có PNG nền trong suốt đặt tại `public/assets/`. Thêm vào `Assets.load()` trong `main.tsx` trước khi dùng.
-6. **Thứ tự layer địa danh:** Dragon/Landmark sprite LUÔN nằm giữa `baseEnvironment` và `roadContainer` — dùng `getChildIndex` thay vì hardcode index.
+3. Địa danh hiện tại: `Cầu Rồng` (id:1), `Cầu Sông Hàn` (id:2), `Cầu Trần Thị Lý` (id:3).
+4. `laneCount` luôn cố định **3 làn** — KHÔNG thay đổi giá trị này khi thêm địa danh mới.
+5. Thêm địa danh mới (Bà Nà Hills, Ngũ Hành Sơn...) chỉ cần thêm vào `levelData.json` — KHÔNG sửa engine.
+6. **Asset địa danh:** Mỗi địa danh có visual event BẮT BUỘC có PNG nền trong suốt đặt tại `public/assets/`. Thêm vào `Assets.load()` trong `main.tsx` trước khi dùng.
+7. **Thứ tự layer địa danh:** Dragon/Landmark sprite LUÔN nằm giữa `baseEnvironment` và `roadContainer` — dùng `getChildIndex` thay vì hardcode index.
 
 ---
 

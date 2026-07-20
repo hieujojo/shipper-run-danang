@@ -29,6 +29,7 @@
 | `render` | PIXI.Graphics, visual effects, Sprite |
 | `effects` | PixiJS Filters, EffectsManager, particle system |
 | `config` | Vite config, tsconfig, env |
+| `docs`   | RULE.md, README.md, ADDING_LANDMARK.md, hướng dẫn nội bộ |
 
 ## Examples
 feat(player): thêm cơ chế nhảy vượt chướng ngại thấp

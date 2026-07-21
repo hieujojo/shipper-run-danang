@@ -149,3 +149,33 @@ Chỉ cần thêm vào `src/data/levelData.json` — không cần sửa engine:
 1. Tạo PNG asset nền trong suốt → đặt vào `public/assets/`
 2. Thêm vào `Assets.load()` trong `src/main.tsx`
 3. Khai báo `isLandmarkEvent: true` và asset path trong `levelData.json`
+
+## 📊 Đo lường hiệu suất (Performance & Debug)
+
+Dự án có tích hợp sẵn `stats.js` để đo lường FPS và Memory usage trực tiếp trên màn hình.
+Để bật bảng thống kê này, bạn chỉ cần thêm tham số `?debug=1` vào cuối URL.
+
+**Ví dụ:**
+- Chạy local: `http://localhost:5173/?debug=1`
+- Chạy production: `https://shipper-run-danang.vercel.app/?debug=1`
+
+Bảng stats sẽ xuất hiện ở góc trên bên trái màn hình. Click chuột trái vào bảng để chuyển đổi giữa các tab: FPS, MS (thời gian render), và MB (bộ nhớ).
+
+**Tiêu chuẩn Hiệu suất (Benchmark tham khảo):**
+Đối với dự án indie hyper-casual này, các thông số lý tưởng khi test (ở giai đoạn ổn định) sẽ rơi vào khoảng:
+- **FPS:** 60 - 100+ FPS (tuỳ thuộc vào tần số quét màn hình, mức độ này chứng tỏ game chạy cực kỳ mượt mà).
+- **MS:** Dưới 16ms (Ví dụ: ~10ms là xuất sắc, dư sức gánh 60FPS).
+- **MB:** Dưới 100MB (Ví dụ: 40MB - 50MB là rất nhẹ, không có dấu hiệu tràn bộ nhớ - memory leak).
+
+### 🔍 Sử dụng PixiJS DevTools
+Để kiểm tra chi tiết cấu trúc Scene Graph (đếm số lượng Sprites, kiểm tra toạ độ, thuộc tính hiển thị) trực tiếp trên giao diện:
+1. Cài đặt Extension **PixiJS DevTools** cho [Chrome](https://chrome.google.com/webstore/detail/pixijs-devtools/aamddddknhcagpehecnhphigffpjnbgo) hoặc Edge.
+2. Mở trình duyệt web ở môi trường Local (chạy lệnh `npm run dev`).
+3. Nhấn `F12` (Mở Chrome DevTools) -> Chọn tab **PixiJS** ở góc trên cùng.
+4. Tại đây bạn có thể soi từng `Container`, xem thuộc tính `visible`, `alpha`, tắt mở các Node để debug lỗi hiển thị hoặc dọn dẹp các Sprite bị kẹt.
+*(Lưu ý: Game đã tự động kết nối với Extension thông qua biến toàn cục `__PIXI_APP__` trong môi trường dev).*
+
+**Tiêu chuẩn WebGL (Tham khảo qua PixiJS DevTools):**
+- **Scene Nodes:** Tổng số lượng vật thể (Total) nên giữ ở mức dưới 1000 để đảm bảo chạy mượt trên Mobile. (Mức lý tưởng: ~150 - 200 nodes).
+- **GPU Memory:** Lượng VRAM để lưu trữ Texture (hình ảnh). Mức lý tưởng: Dưới 50MB (Game Pixel Art thường ngốn cực kì ít, ví dụ: ~17MB).
+- **Draw Calls (Rất quan trọng):** Số lệnh vẽ gửi xuống GPU. Nhờ cơ chế Batching tự động của PixiJS, con số này nên giữ ở mức cực thấp. Mức lý tưởng: Dưới 50 Draw Calls (Thực tế game đang tối ưu cực tốt với chỉ ~3 Draw Calls).

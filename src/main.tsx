@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { Application, Assets } from "pixi.js";
+import Stats from "stats.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./core/constants";
 import { GameLoop } from "./core/GameLoop";
 import { GameState } from "./core/GameState";
@@ -22,6 +23,20 @@ function App() {
 
   useEffect(() => {
     const app = new Application();
+    // Expose app to global scope for PixiJS DevTools
+    if (import.meta.env.DEV) {
+      (globalThis as any).__PIXI_APP__ = app;
+    }
+
+    const stats = new Stats();
+    stats.showPanel(0);
+    if (window.location.search.includes('debug=1')) {
+      document.body.appendChild(stats.dom);
+    }
+    app.ticker.add(() => {
+      stats.update();
+    });
+
     (async () => {
       await app.init({
         width: CANVAS_WIDTH,
@@ -68,6 +83,9 @@ function App() {
     })();
 
     return () => {
+      if (document.body.contains(stats.dom)) {
+        document.body.removeChild(stats.dom);
+      }
       app.destroy(true);
     };
   }, []);

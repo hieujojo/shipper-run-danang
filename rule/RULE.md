@@ -161,7 +161,18 @@ let state = "start";
    - Kích thước và collision bounds riêng (config trong `VehicleEntity.ts` → `VEHICLE_CONFIGS`)
    - Speed factor riêng (motorbike nhanh hơn, bus chậm hơn)
 4. **Thêm loại xe mới:** BẮT BUỘC có PNG pixel art asset, thêm vào enum `VehicleType` và `VEHICLE_CONFIGS` trong `VehicleEntity.ts`.
+### 🚗 Vehicle Config — Single Source of Truth
 
+5. **`VEHICLE_CONFIGS` là nguồn duy nhất** cho kích thước và collision của xe:
+   - Mọi logic dùng `collisionW`, `collisionH`, `width`, `height` của xe
+     BẮT BUỘC đọc từ `VEHICLE_CONFIGS[type]` trong `VehicleEntity.ts`.
+   - KHÔNG hardcode collision width/height ở bất kỳ file nào khác.
+   - `VEHICLE_CONFIGS` BẮT BUỘC được `export` để các module khác import.
+
+6. **Thêm loại xe mới** chỉ cần 2 bước:
+   1. Thêm entry vào `VehicleType` enum.
+   2. Thêm entry vào `VEHICLE_CONFIGS` với đầy đủ các field.
+   → Không cần sửa bất kỳ file nào khác (GameplayScene, spawner...).
 ---
 
 ## ✅ 10. Checklist trước khi commit

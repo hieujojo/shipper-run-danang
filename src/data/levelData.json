@@ -22,11 +22,15 @@
       "traffic": {
         "waveMinSize": 1,
         "waveMaxSize": 3,
-        "intraWaveGap": 18,
-        "waveCooldownMin": 60,
-        "waveCooldownMax": 120,
+        "intraWaveGap": 45,
+        "waveCooldownMin": 90,
+        "waveCooldownMax": 150,
         "speedVariance": 0.08,
-        "vehicleWeights": { "car": 55, "motorbike": 30, "bus": 15 }
+        "vehicleWeights": {
+          "car": 62,
+          "motorbike": 30,
+          "bus": 8
+        }
       }
     },
     {
@@ -51,11 +55,15 @@
       "traffic": {
         "waveMinSize": 1,
         "waveMaxSize": 2,
-        "intraWaveGap": 22,
-        "waveCooldownMin": 90,
-        "waveCooldownMax": 160,
+        "intraWaveGap": 50,
+        "waveCooldownMin": 110,
+        "waveCooldownMax": 180,
         "speedVariance": 0.1,
-        "vehicleWeights": { "car": 65, "motorbike": 25, "bus": 10 }
+        "vehicleWeights": {
+          "car": 62,
+          "motorbike": 30,
+          "bus": 8
+        }
       }
     },
     {
@@ -79,12 +87,16 @@
       },
       "traffic": {
         "waveMinSize": 2,
-        "waveMaxSize": 4,
-        "intraWaveGap": 14,
-        "waveCooldownMin": 70,
-        "waveCooldownMax": 130,
+        "waveMaxSize": 3,
+        "intraWaveGap": 40,
+        "waveCooldownMin": 85,
+        "waveCooldownMax": 140,
         "speedVariance": 0.12,
-        "vehicleWeights": { "car": 50, "motorbike": 35, "bus": 15 }
+        "vehicleWeights": {
+          "car": 62,
+          "motorbike": 30,
+          "bus": 8
+        }
       }
     }
   ]

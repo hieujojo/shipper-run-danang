@@ -5,7 +5,7 @@ import {
   PLAYER_WIDTH, MOTION_BLUR_THRESHOLD
 } from "../core/constants";
 import { PlayerEntity } from "../entities/PlayerEntity";
-import { VehicleEntity, VehicleType } from "../entities/VehicleEntity";
+import { VehicleEntity, VehicleType, VEHICLE_CONFIGS } from "../entities/VehicleEntity";
 import { ObjectPool } from "../utils/objectPool";
 import { audioManager } from "../utils/audioManager";
 import { ParticleSystem } from "../utils/particleSystem";
@@ -366,7 +366,29 @@ export class GameplayScene {
     for (let i = this.activeVehicles.length - 1; i >= 0; i--) {
       const vehicle = this.activeVehicles[i];
       vehicle.update(deltaTime, currentVehicleSpeed);
+      // DEBUG — xóa sau khi xong
+      if (Math.random() < 0.005) {
+        console.log(`[ACTIVE VEHICLE] type=${vehicle.vehicleType} x=${vehicle.container.x.toFixed(0)} y=${vehicle.container.y.toFixed(0)} active=${vehicle.active}`);
+      }
+      vehicle.update(deltaTime, currentVehicleSpeed);
 
+      // Ngăn xe đè nhau trong runtime: nếu xe này sắp đụng xe phía trước thì giảm tốc
+      for (let j = 0; j < this.activeVehicles.length; j++) {
+        if (j === i) continue;
+        const other = this.activeVehicles[j];
+        if (Math.abs(other.container.y - vehicle.container.y) >= 10) continue;
+
+        const vCfg = VEHICLE_CONFIGS[vehicle.vehicleType];
+        const oCfg = VEHICLE_CONFIGS[other.vehicleType];
+        const safeGap = vCfg.collisionW / 2 + oCfg.collisionW / 2 + 10;
+        const dist = other.container.x - vehicle.container.x;
+
+        // Xe phía trước (dist > 0, xe khác ở bên trái = đã đi trước)
+        if (dist > -safeGap && dist < safeGap) {
+          // Đẩy xe ra khỏi vùng chồng lấp
+          vehicle.container.x = other.container.x + safeGap;
+        }
+      }
       if (
         this.player.collision.checkCollision(vehicle.collision.bounds) &&
         !this.player.isInvincible()
@@ -389,8 +411,10 @@ export class GameplayScene {
         this.player.resetPosition(CANVAS_WIDTH * 0.2, CANVAS_HEIGHT / 2);
         continue;
       }
-
-      if (vehicle.container.x < -100) {
+      // GameplayScene.ts — trong vòng lặp update activeVehicles
+      const halfW = VEHICLE_CONFIGS[vehicle.vehicleType].width / 2;
+      if (vehicle.container.x + halfW < 0) {
+        console.log(`[RELEASE] type=${vehicle.vehicleType} x=${vehicle.container.x.toFixed(0)} — removed`);
         this.vehiclePool.release(vehicle);
         this.activeVehicles.splice(i, 1);
       }
@@ -439,35 +463,74 @@ export class GameplayScene {
 
   private _spawnOneVehicle(speedVariance: number): void {
     const x = CANVAS_WIDTH + 100;
-    const MIN_SAFE_DIST = 180;
-    const safeLanes: number[] = [];
 
-    for (let l = 0; l < LANE_COUNT; l++) {
-      const ly = this.lanePositions[l];
-      const tooClose = this.activeVehicles.some(
-        (v) => Math.abs(v.container.y - ly) < 10 && Math.abs(v.container.x - x) < MIN_SAFE_DIST
-      );
-      if (!tooClose) safeLanes.push(l);
-    }
-    if (safeLanes.length === 0) return;
-
-    const lane = safeLanes[Math.floor(Math.random() * safeLanes.length)];
-    const y = this.lanePositions[lane];
-
-    // Pick loại xe theo weight từ JSON
     const level = levelData.levels[this.currentLevelIndex ?? 0];
     const weights = level.traffic.vehicleWeights;
     const type = this._pickVehicleType(weights);
 
-    // speedVariance: mỗi xe trong wave có tốc độ riêng nhỏ ±variance
+    const newVehicleCfg = VEHICLE_CONFIGS[type];
+    const newVehicleHalfW = newVehicleCfg.collisionW / 2;
+
+    // Chỉ check xe trong vùng gần điểm spawn
+    // Mở rộng zone đủ để cover xe bus (width 200) đang di chuyển
+    const SPAWN_CHECK_ZONE = 800;
+
+    const safeLanes: number[] = [];
+
+    for (let l = 0; l < LANE_COUNT; l++) {
+      const ly = this.lanePositions[l];
+
+      const tooClose = this.activeVehicles.some((v) => {
+        if (Math.abs(v.container.y - ly) >= 10) return false;
+        if (v.container.x < x - SPAWN_CHECK_ZONE) return false;
+
+        const existingType = v.vehicleType;
+        const existingHalfW = VEHICLE_CONFIGS[existingType].collisionW / 2;
+        const buffer = Math.max(
+          VEHICLE_CONFIGS[existingType].spawnBuffer,
+          newVehicleCfg.spawnBuffer
+        );
+        const minDist = existingHalfW + newVehicleHalfW + buffer;
+        const actualDist = Math.abs(v.container.x - x);
+        console.log(
+          `[SPAWN CHECK] new=${type}(halfW=${newVehicleHalfW}) vs existing=${existingType}(halfW=${existingHalfW}) | buffer=${buffer} | minDist=${minDist} | actualDist=${actualDist.toFixed(0)} | blocked=${actualDist < minDist}`
+        );
+        return actualDist < minDist;
+      });
+
+      if (!tooClose) safeLanes.push(l);
+    }
+
+    // Không có lane an toàn → bỏ qua lần spawn này
+    if (safeLanes.length === 0) {
+      console.log(`[SPAWN SKIP] type=${type} — no safe lane available`);
+      return;
+    }
+
+    // Giới hạn tối đa xe cùng làn spawn liên tiếp
+    // Ưu tiên lane ít xe nhất để phân bổ đều
+    const laneVehicleCounts = safeLanes.map((l) => ({
+      lane: l,
+      count: this.activeVehicles.filter(
+        (v) => Math.abs(v.container.y - this.lanePositions[l]) < 10
+      ).length,
+    }));
+    laneVehicleCounts.sort((a, b) => a.count - b.count);
+    const lane = laneVehicleCounts[0].lane;
+    const y = this.lanePositions[lane];
+
     const variance = 1 + (Math.random() * 2 - 1) * speedVariance;
-    void variance; // variance được dùng trong VehicleEntity.update() qua speedFactor
+    void variance;
 
     const vehicle = this.vehiclePool.get();
     vehicle.init(x, y, 0, type);
+    console.log(`[SPAWNED] type=${type} x=${x} y=${y} collisionW=${newVehicleCfg.collisionW} lane=${lane}`);
     this.activeVehicles.push(vehicle);
-  }
 
+    if (type === VehicleType.BUS) {
+      this.vehiclesLeftInWave = 0;
+    }
+  }
   private _pickVehicleType(weights: { car: number; motorbike: number; bus: number }): VehicleType {
     const total = weights.car + weights.motorbike + weights.bus;
     const roll = Math.random() * total;

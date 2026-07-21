@@ -35,6 +35,8 @@ function App() {
       await Assets.load([
         "/assets/player_shipper.png",
         "/assets/vehicle_car.png",
+        "/assets/vehicle_motorbike.png",
+        "/assets/vehicle_bus.png",
         "/assets/package_box.png",
         "/assets/cau-rong-landmark.png",
         "/assets/cau-song-han_landmark.png",

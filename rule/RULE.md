@@ -147,7 +147,24 @@ let state = "start";
 
 ---
 
-## ✅ 9. Checklist trước khi commit
+## 🚗 9. Traffic System Rules
+
+1. **Wave-based spawning bắt buộc:** Xe xuất hiện theo wave (sóng), KHÔNG spawn đơn lẻ theo timer cứng nhắc.
+2. **Traffic config trong JSON:** Mọi config traffic BẮT BUỘC nằm trong `levelData.json` → `traffic` object:
+   - `waveMinSize`, `waveMaxSize`: Số xe trong 1 wave
+   - `intraWaveGap`: Khoảng cách (frames) giữa xe trong cùng wave
+   - `waveCooldownMin`, `waveCooldownMax`: Khoảng nghỉ giữa các wave
+   - `speedVariance`: Biến động tốc độ giữa các xe (0.0-1.0)
+   - `vehicleWeights`: Tỷ lệ xuất hiện từng loại xe (`car`, `motorbike`, `bus`)
+3. **Vehicle types:** Game có 3 loại xe cố định — Car, Motorbike, Bus. Mỗi loại có:
+   - Asset PNG riêng trong `public/assets/` (ví dụ: `vehicle_motorbike.png`)
+   - Kích thước và collision bounds riêng (config trong `VehicleEntity.ts` → `VEHICLE_CONFIGS`)
+   - Speed factor riêng (motorbike nhanh hơn, bus chậm hơn)
+4. **Thêm loại xe mới:** BẮT BUỘC có PNG pixel art asset, thêm vào enum `VehicleType` và `VEHICLE_CONFIGS` trong `VehicleEntity.ts`.
+
+---
+
+## ✅ 10. Checklist trước khi commit
 
 - [ ] Không có `console.log` thừa
 - [ ] Không có `any` type

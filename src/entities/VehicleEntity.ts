@@ -75,6 +75,7 @@ export class VehicleEntity implements IVehicleEntity {
 
   constructor() {
     this.container = new Container();
+    this.container.visible = false;
     this.sprite = new Sprite();
     this.sprite.anchor.set(0.5);
     this.movement = new MovementComponent(0, 0);
@@ -84,6 +85,7 @@ export class VehicleEntity implements IVehicleEntity {
 
   init(x: number, y: number, speed: number, type: VehicleType = VehicleType.CAR): void {
     this.active = true;
+    this.container.visible = true;
     this.vehicleType = type;
     const cfg = VEHICLE_CONFIGS[type];
     this.speedFactor = cfg.speedFactor;
@@ -126,6 +128,7 @@ export class VehicleEntity implements IVehicleEntity {
 
   reset(x: number = 0, y: number = 0, speed: number = 0): void {
     this.active = false;
+    this.container.visible = false;
     this.container.x = x;
     this.container.y = y;
     this.speed = speed;

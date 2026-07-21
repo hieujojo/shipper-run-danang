@@ -18,7 +18,20 @@
       "rushHourMultiplier": 2.5,
       "initialMultiplier": 0.5,
       "speedIncreaseRate": 0.03,
-      "maxSpeedMultiplier": 3.5
+      "maxSpeedMultiplier": 3.5,
+      "traffic": {
+        "waveMinSize": 1,
+        "waveMaxSize": 3,
+        "intraWaveGap": 45,
+        "waveCooldownMin": 90,
+        "waveCooldownMax": 150,
+        "speedVariance": 0.08,
+        "vehicleWeights": {
+          "car": 62,
+          "motorbike": 30,
+          "bus": 8
+        }
+      }
     },
     {
       "id": 2,
@@ -38,6 +51,19 @@
         "scaleMultiplier": 1.3,
         "yOffsetRatio": 0.25,
         "breathEffect": null
+      },
+      "traffic": {
+        "waveMinSize": 1,
+        "waveMaxSize": 2,
+        "intraWaveGap": 50,
+        "waveCooldownMin": 110,
+        "waveCooldownMax": 180,
+        "speedVariance": 0.1,
+        "vehicleWeights": {
+          "car": 62,
+          "motorbike": 30,
+          "bus": 8
+        }
       }
     },
     {
@@ -58,6 +84,19 @@
         "scaleMultiplier": 1.4,
         "yOffsetRatio": 0.25,
         "breathEffect": null
+      },
+      "traffic": {
+        "waveMinSize": 2,
+        "waveMaxSize": 3,
+        "intraWaveGap": 40,
+        "waveCooldownMin": 85,
+        "waveCooldownMax": 140,
+        "speedVariance": 0.12,
+        "vehicleWeights": {
+          "car": 62,
+          "motorbike": 30,
+          "bus": 8
+        }
       }
     }
   ]

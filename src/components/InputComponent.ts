@@ -16,11 +16,16 @@ export class InputComponent {
   };
 
   constructor() {
-    window.addEventListener("keydown", this.onKeyDown.bind(this));
-    window.addEventListener("keyup", this.onKeyUp.bind(this));
+    window.addEventListener("keydown", this.onKeyDown);
+    window.addEventListener("keyup", this.onKeyUp);
   }
 
-  private onKeyDown(e: KeyboardEvent): void {
+  private onKeyDown = (e: KeyboardEvent): void => {
+    // Chỉ preventDefault các phím dùng trong game để tránh kẹt focus vào UI/Browser
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(e.code)) {
+      e.preventDefault();
+      console.log("InputComponent - KeyDown prevented default:", e.code);
+    }
     switch (e.code) {
       case "ArrowLeft": this.state.left = true; break;
       case "ArrowRight": this.state.right = true; break;
@@ -30,7 +35,11 @@ export class InputComponent {
     }
   }
 
-  private onKeyUp(e: KeyboardEvent): void {
+  private onKeyUp = (e: KeyboardEvent): void => {
+    if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(e.code)) {
+      e.preventDefault();
+      console.log("InputComponent - KeyUp prevented default:", e.code);
+    }
     switch (e.code) {
       case "ArrowLeft": this.state.left = false; break;
       case "ArrowRight": this.state.right = false; break;
@@ -45,7 +54,7 @@ export class InputComponent {
   }
 
   destroy(): void {
-    window.removeEventListener("keydown", this.onKeyDown.bind(this));
-    window.removeEventListener("keyup", this.onKeyUp.bind(this));
+    window.removeEventListener("keydown", this.onKeyDown);
+    window.removeEventListener("keyup", this.onKeyUp);
   }
 }

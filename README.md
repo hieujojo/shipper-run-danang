@@ -99,9 +99,9 @@ Game có 3 loại xe với kích thước và tốc độ khác nhau:
 
 | Loại xe | Kích thước | Tốc độ | Tỷ lệ xuất hiện | Đặc điểm |
 |---|---|---|---|---|
-| 🚗 Xe con (Car) | 75×45 | 1.0x | 50-65% | Xe tiêu chuẩn, dễ lách |
-| 🏍️ Xe máy (Motorbike) | 48×30 | 1.3x | 25-35% | Nhỏ, nhanh, bất ngờ |
-| 🚌 Xe buýt (Bus) | 110×52 | 0.7x | 10-15% | To, chậm, chiếm làn |
+| 🚗 Xe con (Car) | PLAYER_WIDTH×1.5×2.5 | 1.0x | 55-65% | Xe tiêu chuẩn, dễ lách |
+| 🏍️ Xe máy (Motorbike) | PLAYER_WIDTH×1.5×2 | 1.0x | 25-30% | Lớn ngang 1.5x player, đi ngược chiều |
+| 🚌 Xe buýt (Bus) | PLAYER_WIDTH×1.5×5 | 1.0x | 8% | Rất to, chiếm cả làn, spawn = 1 wave riêng |
 
 - Tỷ lệ xuất hiện và tốc độ xe cấu hình trong `levelData.json` (traffic.vehicleWeights)
 - Xe xuất hiện theo **wave-based spawning** (đợt sóng) thay vì spawn đơn lẻ
@@ -113,7 +113,6 @@ Game có 3 loại xe với kích thước và tốc độ khác nhau:
 |---|---|---|
 | Invincible Blink | Va chạm xe | Player blink sáng/tối 120 frames, miễn nhiễm va chạm |
 | Speed Trail | `speedMultiplier > 1.2` | Khói xám phía sau shipper, càng nhanh càng dày |
-| **Headlight Glow** | **Luôn bật** | **Đèn pha vàng nhạt (BlurFilter) ở mỗi xe, tạo độ sâu** |
 | **Motion Blur** | **`speedMultiplier > 1.2`** | **Blur ngang nhẹ trên tất cả xe khi tốc độ cao** |
 | Fire Tint | Cầu Rồng phun lửa | `ColorMatrixFilter` đỏ cam toàn cảnh + spawn xe x2 |
 | Water Tint | Cầu Rồng phun nước | `ColorMatrixFilter` xanh lạnh toàn cảnh + package xuất hiện nhanh x3 |

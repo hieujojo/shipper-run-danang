@@ -376,10 +376,12 @@ export class GameplayScene {
         const safeGap = vCfg.collisionW / 2 + oCfg.collisionW / 2 + 10;
         const dist = other.container.x - vehicle.container.x;
 
-        // Xe phía trước (dist > 0, xe khác ở bên trái = đã đi trước)
         if (dist > -safeGap && dist < safeGap) {
-          // Đẩy xe ra khỏi vùng chồng lấp
-          vehicle.container.x = other.container.x + safeGap;
+          if (vehicle.container.x > other.container.x) {
+            vehicle.container.x = other.container.x + safeGap;
+          } else {
+            other.container.x = vehicle.container.x + safeGap;
+          }
         }
       }
       if (

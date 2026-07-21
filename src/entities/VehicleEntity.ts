@@ -110,22 +110,19 @@ export class VehicleEntity implements IVehicleEntity {
   }
 
   update(deltaTime: number, currentSpeed?: number): void {
-    if (!this.active) return;
-    const baseSpeed = currentSpeed !== undefined ? currentSpeed : this.speed;
-    const s = baseSpeed * this.speedFactor;
-    this.container.x += s * deltaTime;
+  if (!this.active) return;
+  const baseSpeed = currentSpeed !== undefined ? currentSpeed : this.speed;
+  const s = baseSpeed * this.speedFactor;
+  this.container.x += s * deltaTime;
 
-    // Nhún nhẹ theo trục Y cho cảm giác sống động
-    this.sprite.y = Math.sin(Date.now() / 150 + this.container.x) * 1.5;
-
-    const cfg = VEHICLE_CONFIGS[this.vehicleType];
-    this.collision.updateBounds(
-      this.container.x - cfg.collisionW / 2,
-      this.container.y - cfg.collisionH / 2,
-      cfg.collisionW,
-      cfg.collisionH
-    );
-  }
+  const cfg = VEHICLE_CONFIGS[this.vehicleType];
+  this.collision.updateBounds(
+    this.container.x - cfg.collisionW / 2,
+    this.container.y - cfg.collisionH / 2,
+    cfg.collisionW,
+    cfg.collisionH
+  );
+}
 
   reset(x: number = 0, y: number = 0, speed: number = 0): void {
     this.active = false;

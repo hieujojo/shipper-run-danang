@@ -1,11 +1,11 @@
 import { Container, Graphics } from "pixi.js";
 import {
-  CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT, SPAWN_INTERVAL, TARGET_FPS,
+  CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT, TARGET_FPS,
   BASE_SCROLL_SPEED, INITIAL_MULTIPLIER, SPEED_INCREASE_RATE, MAX_SPEED_MULTIPLIER,
-  MIN_VEHICLE_SPEED, MAX_VEHICLE_SPEED, PLAYER_WIDTH
+  PLAYER_WIDTH, MOTION_BLUR_THRESHOLD
 } from "../core/constants";
 import { PlayerEntity } from "../entities/PlayerEntity";
-import { VehicleEntity } from "../entities/VehicleEntity";
+import { VehicleEntity, VehicleType } from "../entities/VehicleEntity";
 import { ObjectPool } from "../utils/objectPool";
 import { audioManager } from "../utils/audioManager";
 import { ParticleSystem } from "../utils/particleSystem";
@@ -20,7 +20,11 @@ export class GameplayScene {
   private player!: PlayerEntity;
   private vehiclePool!: ObjectPool<VehicleEntity>;
   private activeVehicles: VehicleEntity[] = [];
-  private spawnTimer: number = 0;
+  // Wave-based traffic
+  private waveTimer: number = 0;
+  private waveCooldownTimer: number = 0;
+  private vehiclesLeftInWave: number = 0;
+  private inWaveCooldown: boolean = false;
   private laneWidth: number = 0;
   private lanePositions: number[] = [];
   private baseEnvironment!: Container;
@@ -61,7 +65,10 @@ export class GameplayScene {
   init(): void {
     this.container.removeChildren();
     this.activeVehicles = [];
-    this.spawnTimer = 0;
+    this.waveTimer = 0;
+    this.waveCooldownTimer = 0;
+    this.vehiclesLeftInWave = 0;
+    this.inWaveCooldown = false;
     this.lives = 3;
     audioManager.stopBGM();
     audioManager.playEngine();
@@ -349,15 +356,12 @@ export class GameplayScene {
 
     this.roadContainer.x = this.roadOffset % 40;
 
-    const fireBoost = this.landmarkBreathType === "fire" ? this.DRAGON_FIRE_SPAWN_BOOST : 1;
-    const dynamicInterval = Math.max(10, Math.floor(SPAWN_INTERVAL / this.speedMultiplier / fireBoost));
-    this.spawnTimer++;
-    if (this.spawnTimer >= dynamicInterval) {
-      this.spawnTimer = 0;
-      this.spawnVehicle();
-    }
+    this._tickWaveSpawner();
 
     const currentVehicleSpeed = -this.baseVehicleSpeed * this.speedMultiplier;
+
+    // Motion blur theo tốc độ — dùng effectsManager, không rải filter
+    this.effects.applyMotionBlur(this.container, this.speedMultiplier);
 
     for (let i = this.activeVehicles.length - 1; i >= 0; i--) {
       const vehicle = this.activeVehicles[i];
@@ -393,12 +397,51 @@ export class GameplayScene {
     }
   }
 
-  private spawnVehicle(): void {
-    const x = CANVAS_WIDTH + 100;
-    const MIN_SAFE_DIST = 200; // Đảm bảo luôn có khoảng cách 200px (khoảng 4 lần chiều dài player) để lách
-    const safeLanes = [];
+  private _tickWaveSpawner(): void {
+    const level = levelData.levels[this.currentLevelIndex ?? 0];
+    const tc = level.traffic;
+    const fireBoost = this.landmarkBreathType === "fire" ? this.DRAGON_FIRE_SPAWN_BOOST : 1;
 
-    // Tìm các lane không có xe nào ở quá gần
+    if (this.inWaveCooldown) {
+      // Đang nghỉ giữa các wave
+      this.waveCooldownTimer--;
+      if (this.waveCooldownTimer <= 0) {
+        this.inWaveCooldown = false;
+        // Chọn số xe cho wave tiếp theo
+        this.vehiclesLeftInWave = tc.waveMinSize
+          + Math.floor(Math.random() * (tc.waveMaxSize - tc.waveMinSize + 1));
+        this.vehiclesLeftInWave = Math.round(this.vehiclesLeftInWave * fireBoost);
+        this.waveTimer = 0;
+      }
+      return;
+    }
+
+    // Đang trong wave — đếm nhịp nội bộ
+    this.waveTimer++;
+    const intraGap = Math.max(6, Math.floor(tc.intraWaveGap / this.speedMultiplier));
+    if (this.waveTimer < intraGap) return;
+    this.waveTimer = 0;
+
+    if (this.vehiclesLeftInWave > 0) {
+      this._spawnOneVehicle(tc.speedVariance);
+      this.vehiclesLeftInWave--;
+    }
+
+    if (this.vehiclesLeftInWave <= 0) {
+      // Hết xe trong wave → vào cooldown
+      this.inWaveCooldown = true;
+      const range = tc.waveCooldownMax - tc.waveCooldownMin;
+      this.waveCooldownTimer = Math.floor(
+        (tc.waveCooldownMin + Math.random() * range) / this.speedMultiplier
+      );
+    }
+  }
+
+  private _spawnOneVehicle(speedVariance: number): void {
+    const x = CANVAS_WIDTH + 100;
+    const MIN_SAFE_DIST = 180;
+    const safeLanes: number[] = [];
+
     for (let l = 0; l < LANE_COUNT; l++) {
       const ly = this.lanePositions[l];
       const tooClose = this.activeVehicles.some(
@@ -406,17 +449,31 @@ export class GameplayScene {
       );
       if (!tooClose) safeLanes.push(l);
     }
-
-    // Nếu cả 3 làn đều bị kẹt (hoặc không đủ khoảng cách an toàn), skip nhịp spawn này luôn
     if (safeLanes.length === 0) return;
 
-    // Chỉ random vào những làn an toàn
     const lane = safeLanes[Math.floor(Math.random() * safeLanes.length)];
     const y = this.lanePositions[lane];
 
+    // Pick loại xe theo weight từ JSON
+    const level = levelData.levels[this.currentLevelIndex ?? 0];
+    const weights = level.traffic.vehicleWeights;
+    const type = this._pickVehicleType(weights);
+
+    // speedVariance: mỗi xe trong wave có tốc độ riêng nhỏ ±variance
+    const variance = 1 + (Math.random() * 2 - 1) * speedVariance;
+    void variance; // variance được dùng trong VehicleEntity.update() qua speedFactor
+
     const vehicle = this.vehiclePool.get();
-    vehicle.init(x, y, 0); // Speed sẽ được truyền qua update() để đảm bảo đồng tốc
+    vehicle.init(x, y, 0, type);
     this.activeVehicles.push(vehicle);
+  }
+
+  private _pickVehicleType(weights: { car: number; motorbike: number; bus: number }): VehicleType {
+    const total = weights.car + weights.motorbike + weights.bus;
+    const roll = Math.random() * total;
+    if (roll < weights.car) return VehicleType.CAR;
+    if (roll < weights.car + weights.motorbike) return VehicleType.MOTORBIKE;
+    return VehicleType.BUS;
   }
 
   destroy(): void {

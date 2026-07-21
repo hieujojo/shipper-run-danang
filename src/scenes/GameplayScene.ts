@@ -1,8 +1,7 @@
 import { Container, Graphics } from "pixi.js";
 import {
   CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT, TARGET_FPS,
-  BASE_SCROLL_SPEED, INITIAL_MULTIPLIER, SPEED_INCREASE_RATE, MAX_SPEED_MULTIPLIER,
-  PLAYER_WIDTH, MOTION_BLUR_THRESHOLD
+  BASE_SCROLL_SPEED, INITIAL_MULTIPLIER, SPEED_INCREASE_RATE, MAX_SPEED_MULTIPLIER
 } from "../core/constants";
 import { PlayerEntity } from "../entities/PlayerEntity";
 import { VehicleEntity, VehicleType, VEHICLE_CONFIGS } from "../entities/VehicleEntity";
@@ -366,12 +365,6 @@ export class GameplayScene {
     for (let i = this.activeVehicles.length - 1; i >= 0; i--) {
       const vehicle = this.activeVehicles[i];
       vehicle.update(deltaTime, currentVehicleSpeed);
-      // DEBUG — xóa sau khi xong
-      if (Math.random() < 0.005) {
-        console.log(`[ACTIVE VEHICLE] type=${vehicle.vehicleType} x=${vehicle.container.x.toFixed(0)} y=${vehicle.container.y.toFixed(0)} active=${vehicle.active}`);
-      }
-      vehicle.update(deltaTime, currentVehicleSpeed);
-
       // Ngăn xe đè nhau trong runtime: nếu xe này sắp đụng xe phía trước thì giảm tốc
       for (let j = 0; j < this.activeVehicles.length; j++) {
         if (j === i) continue;
@@ -414,7 +407,6 @@ export class GameplayScene {
       // GameplayScene.ts — trong vòng lặp update activeVehicles
       const halfW = VEHICLE_CONFIGS[vehicle.vehicleType].width / 2;
       if (vehicle.container.x + halfW < 0) {
-        console.log(`[RELEASE] type=${vehicle.vehicleType} x=${vehicle.container.x.toFixed(0)} — removed`);
         this.vehiclePool.release(vehicle);
         this.activeVehicles.splice(i, 1);
       }
@@ -492,9 +484,6 @@ export class GameplayScene {
         );
         const minDist = existingHalfW + newVehicleHalfW + buffer;
         const actualDist = Math.abs(v.container.x - x);
-        console.log(
-          `[SPAWN CHECK] new=${type}(halfW=${newVehicleHalfW}) vs existing=${existingType}(halfW=${existingHalfW}) | buffer=${buffer} | minDist=${minDist} | actualDist=${actualDist.toFixed(0)} | blocked=${actualDist < minDist}`
-        );
         return actualDist < minDist;
       });
 
@@ -503,7 +492,6 @@ export class GameplayScene {
 
     // Không có lane an toàn → bỏ qua lần spawn này
     if (safeLanes.length === 0) {
-      console.log(`[SPAWN SKIP] type=${type} — no safe lane available`);
       return;
     }
 
@@ -524,7 +512,6 @@ export class GameplayScene {
 
     const vehicle = this.vehiclePool.get();
     vehicle.init(x, y, 0, type);
-    console.log(`[SPAWNED] type=${type} x=${x} y=${y} collisionW=${newVehicleCfg.collisionW} lane=${lane}`);
     this.activeVehicles.push(vehicle);
 
     if (type === VehicleType.BUS) {

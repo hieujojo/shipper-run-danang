@@ -113,10 +113,6 @@ export class VehicleEntity implements IVehicleEntity {
     if (!this.active) return;
     const baseSpeed = currentSpeed !== undefined ? currentSpeed : this.speed;
     const s = baseSpeed * this.speedFactor;
-    // DEBUG — xóa sau khi fix xong
-    if (Math.random() < 0.001) {
-      console.log(`[VEHICLE UPDATE] type=${this.vehicleType} speedFactor=${this.speedFactor} baseSpeed=${baseSpeed?.toFixed(2)} actualSpeed=${s.toFixed(2)} x=${this.container.x.toFixed(0)}`);
-    }
     this.container.x += s * deltaTime;
 
     // Nhún nhẹ theo trục Y cho cảm giác sống động

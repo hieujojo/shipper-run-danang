@@ -20,6 +20,7 @@ export class GameOverScene {
     overlay.fill(0x000000);
     overlay.alpha = 0.8;
     this.container.addChild(overlay);
+    
     audioManager.playBGM();
     audioManager.stopEngine();
     

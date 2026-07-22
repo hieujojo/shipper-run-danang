@@ -3,6 +3,9 @@ export const CANVAS_WIDTH = 1280;
 export const CANVAS_HEIGHT = 720;
 export const ASPECT_RATIO = 16 / 9;
 
+export const ROAD_TOP = CANVAS_HEIGHT * 0.2;
+export const ROAD_BOTTOM = CANVAS_HEIGHT * 0.8;
+
 // Game
 export const TARGET_FPS = 60;
 export const LANE_COUNT = 3;

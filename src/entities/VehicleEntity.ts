@@ -20,6 +20,8 @@ interface VehicleConfig {
   speedFactor: number;
   flipX?: boolean;
   spawnBuffer: number;
+  smokeOffset: number;
+  smokeOffsetY?: number;
 }
 
 export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
@@ -31,6 +33,7 @@ export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
     collisionH: 32,
     speedFactor: 1.0,
     spawnBuffer: 30,
+    smokeOffset: 90,
   },
   [VehicleType.MOTORBIKE]: {
     assetKey: "/assets/vehicle_motorbike.png",
@@ -41,6 +44,8 @@ export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
     speedFactor: 1.0,
     flipX: true,
     spawnBuffer: 30,
+    smokeOffset: 40,
+    smokeOffsetY: 15,
   },
   [VehicleType.BUS]: {
     assetKey: "/assets/vehicle_bus.png",
@@ -50,6 +55,7 @@ export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
     collisionH: 78,
     speedFactor: 1.0,
     spawnBuffer: 60,
+    smokeOffset: 150,
   },
 };
 
@@ -75,6 +81,7 @@ export class VehicleEntity implements IVehicleEntity {
 
   constructor() {
     this.container = new Container();
+    this.container.visible = false;
     this.sprite = new Sprite();
     this.sprite.anchor.set(0.5);
     this.movement = new MovementComponent(0, 0);
@@ -84,6 +91,7 @@ export class VehicleEntity implements IVehicleEntity {
 
   init(x: number, y: number, speed: number, type: VehicleType = VehicleType.CAR): void {
     this.active = true;
+    this.container.visible = true;
     this.vehicleType = type;
     const cfg = VEHICLE_CONFIGS[type];
     this.speedFactor = cfg.speedFactor;
@@ -110,25 +118,23 @@ export class VehicleEntity implements IVehicleEntity {
   }
 
   update(deltaTime: number, currentSpeed?: number): void {
-    if (!this.active) return;
-    const baseSpeed = currentSpeed !== undefined ? currentSpeed : this.speed;
-    const s = baseSpeed * this.speedFactor;
-    this.container.x += s * deltaTime;
+  if (!this.active) return;
+  const baseSpeed = currentSpeed !== undefined ? currentSpeed : this.speed;
+  const s = baseSpeed * this.speedFactor;
+  this.container.x += s * deltaTime;
 
-    // Nhún nhẹ theo trục Y cho cảm giác sống động
-    this.sprite.y = Math.sin(Date.now() / 150 + this.container.x) * 1.5;
-
-    const cfg = VEHICLE_CONFIGS[this.vehicleType];
-    this.collision.updateBounds(
-      this.container.x - cfg.collisionW / 2,
-      this.container.y - cfg.collisionH / 2,
-      cfg.collisionW,
-      cfg.collisionH
-    );
-  }
+  const cfg = VEHICLE_CONFIGS[this.vehicleType];
+  this.collision.updateBounds(
+    this.container.x - cfg.collisionW / 2,
+    this.container.y - cfg.collisionH / 2,
+    cfg.collisionW,
+    cfg.collisionH
+  );
+}
 
   reset(x: number = 0, y: number = 0, speed: number = 0): void {
     this.active = false;
+    this.container.visible = false;
     this.container.x = x;
     this.container.y = y;
     this.speed = speed;

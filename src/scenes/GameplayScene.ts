@@ -1,7 +1,8 @@
 import { Container, Graphics } from "pixi.js";
 import {
   CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT, TARGET_FPS,
-  BASE_SCROLL_SPEED, INITIAL_MULTIPLIER, SPEED_INCREASE_RATE, MAX_SPEED_MULTIPLIER
+  BASE_SCROLL_SPEED, INITIAL_MULTIPLIER, SPEED_INCREASE_RATE, MAX_SPEED_MULTIPLIER,
+  ROAD_TOP, ROAD_BOTTOM
 } from "../core/constants";
 import { PlayerEntity } from "../entities/PlayerEntity";
 import { VehicleEntity, VehicleType, VEHICLE_CONFIGS } from "../entities/VehicleEntity";
@@ -71,10 +72,18 @@ export class GameplayScene {
     this.lives = 3;
     audioManager.stopBGM();
     audioManager.playEngine();
+    // Reset delivery state BEFORE creating new entities
     this.hasPackage = false;
     this.deliveryTimer = 0;
+    // Create new entity instances
     this.package = new PackageEntity();
     this.deliveryPoint = new DeliveryPointEntity();
+
+    // Ensure entities are reset (active=false, visible=false)
+    this.deliveryPoint.reset();
+    this.package.reset();
+    // Sync hasPackage state to React UI AFTER local state is reset
+    this.onPackageChange?.(false);
 
     const levelCfg = levelData.levels[0];
     this.initialMultiplier = levelCfg.initialMultiplier;
@@ -178,9 +187,11 @@ export class GameplayScene {
     const level = levelData.levels[this.currentLevelIndex ?? 0];
     const cfg: LandmarkEventConfig = {
       assetPath: level.assetPath,
-      scaleMultiplier: level.landmarkEvent?.scaleMultiplier ?? 1.3,
+      width: level.landmarkEvent?.width,
       yOffsetRatio: level.landmarkEvent?.yOffsetRatio ?? 0.25,
       breathEffect: (level.landmarkEvent?.breathEffect as "fire" | "water" | null) ?? null,
+      flipX: level.landmarkEvent?.flipX ?? false,
+      seamlessTile: (level.landmarkEvent?.seamlessTile as "mirror" | "repeat") ?? undefined,
     };
     this.landmarkEvent.init(cfg);
     const roadIdx = this.container.getChildIndex(this.roadContainer);
@@ -197,19 +208,46 @@ export class GameplayScene {
     this.landmarkEvent.destroy();
   }
 
+  private getSafeLaneForEntity(x: number, width: number): number {
+    const safeLanes: number[] = [];
+    const SPAWN_CHECK_ZONE = 300;
+
+    for (let l = 0; l < LANE_COUNT; l++) {
+      const ly = this.lanePositions[l];
+      
+      const tooClose = this.activeVehicles.some((v) => {
+        if (Math.abs(v.container.y - ly) >= 10) return false;
+        if (v.container.x < x - SPAWN_CHECK_ZONE) return false;
+        
+        const existingType = v.vehicleType;
+        const existingHalfW = VEHICLE_CONFIGS[existingType].width / 2;
+        const minDist = existingHalfW + width / 2 + 50;
+        const actualDist = Math.abs(v.container.x - x);
+        return actualDist < minDist;
+      });
+
+      if (!tooClose) safeLanes.push(l);
+    }
+    
+    if (safeLanes.length > 0) {
+       return safeLanes[Math.floor(Math.random() * safeLanes.length)];
+    }
+    return Math.floor(Math.random() * LANE_COUNT);
+  }
+
   private spawnPackage(): void {
     if (!this.package) return;
-    const lane = Math.floor(Math.random() * LANE_COUNT);
-    const y = this.lanePositions[lane];
     const x = CANVAS_WIDTH + 100;
+    const lane = this.getSafeLaneForEntity(x, 45);
+    const y = this.lanePositions[lane];
     this.package.init(x, y);
   }
 
   private spawnDeliveryPoint(): void {
     if (!this.deliveryPoint) return;
-    const lane = Math.floor(Math.random() * LANE_COUNT);
-    const y = this.lanePositions[lane];
     const x = CANVAS_WIDTH + 100;
+    const lane = this.getSafeLaneForEntity(x, 65);
+    const y = this.lanePositions[lane];
     this.deliveryPoint.init(x, y);
   }
 
@@ -220,6 +258,7 @@ export class GameplayScene {
 
     if (!this.hasPackage && this.package.active) {
       this.package.container.x -= envSpeed;
+      this.package.syncBounds();
       if (this.package.container.x < -100) {
         this.package.reset();
         this.spawnPackage();
@@ -235,6 +274,7 @@ export class GameplayScene {
 
     if (this.hasPackage && this.deliveryPoint.active) {
       this.deliveryPoint.container.x -= envSpeed;
+      this.deliveryPoint.syncBounds();
       if (this.deliveryPoint.container.x < -100) {
         this.deliveryPoint.reset();
         this.spawnDeliveryPoint();
@@ -316,25 +356,31 @@ export class GameplayScene {
   }
 
   update(deltaTime: number): void {
-    const roadTop = CANVAS_HEIGHT * 0.2;
-    const roadBottom = CANVAS_HEIGHT * 0.8;
+    const roadTop = ROAD_TOP;
+    const roadBottom = ROAD_BOTTOM;
     this.player?.update(deltaTime, roadTop, roadBottom);
 
     this.elapsedTime += deltaTime / TARGET_FPS;
-    this.speedMultiplier = Math.min(
+    const baseSpeed = Math.min(
       this.initialMultiplier + this.elapsedTime * this.speedIncreaseRate,
       this.maxSpeedMultiplier
     );
+    
+    const isDashing = this.player?.getInputState().space ?? false;
+    this.speedMultiplier = baseSpeed * (isDashing ? 1.6 : 1.0);
 
     this.updateDelivery(deltaTime);
     this.particles.update(deltaTime);
     this.effects.update(deltaTime);
 
-    if (this.speedMultiplier > 0.8) {
+    if (this.speedMultiplier > 1.1) {
       this.particles.emitSpeedTrail(
-        this.player.container.x - 25,
+        this.player.container.x,
         this.player.container.y,
-        this.speedMultiplier
+        this.speedMultiplier,
+        false,
+        45,
+        15 // yOffset để hạ thấp khói
       );
     }
 
@@ -365,6 +411,19 @@ export class GameplayScene {
     for (let i = this.activeVehicles.length - 1; i >= 0; i--) {
       const vehicle = this.activeVehicles[i];
       vehicle.update(deltaTime, currentVehicleSpeed);
+      
+      if (baseSpeed > 1.1) {
+        const vCfg = VEHICLE_CONFIGS[vehicle.vehicleType];
+        this.particles.emitSpeedTrail(
+          vehicle.container.x,
+          vehicle.container.y,
+          baseSpeed,
+          true,
+          vCfg.smokeOffset,
+          vCfg.smokeOffsetY || 0
+        );
+      }
+
       // Ngăn xe đè nhau trong runtime: nếu xe này sắp đụng xe phía trước thì giảm tốc
       for (let j = 0; j < this.activeVehicles.length; j++) {
         if (j === i) continue;
@@ -373,13 +432,15 @@ export class GameplayScene {
 
         const vCfg = VEHICLE_CONFIGS[vehicle.vehicleType];
         const oCfg = VEHICLE_CONFIGS[other.vehicleType];
-        const safeGap = vCfg.collisionW / 2 + oCfg.collisionW / 2 + 10;
+        const safeGap = vCfg.width / 2 + oCfg.width / 2 + 10;
         const dist = other.container.x - vehicle.container.x;
 
-        // Xe phía trước (dist > 0, xe khác ở bên trái = đã đi trước)
         if (dist > -safeGap && dist < safeGap) {
-          // Đẩy xe ra khỏi vùng chồng lấp
-          vehicle.container.x = other.container.x + safeGap;
+          if (vehicle.container.x > other.container.x) {
+            vehicle.container.x = other.container.x + safeGap;
+          } else {
+            other.container.x = vehicle.container.x + safeGap;
+          }
         }
       }
       if (
@@ -461,7 +522,7 @@ export class GameplayScene {
     const type = this._pickVehicleType(weights);
 
     const newVehicleCfg = VEHICLE_CONFIGS[type];
-    const newVehicleHalfW = newVehicleCfg.collisionW / 2;
+    const newVehicleHalfW = newVehicleCfg.width / 2;
 
     // Chỉ check xe trong vùng gần điểm spawn
     // Mở rộng zone đủ để cover xe bus (width 200) đang di chuyển
@@ -477,7 +538,7 @@ export class GameplayScene {
         if (v.container.x < x - SPAWN_CHECK_ZONE) return false;
 
         const existingType = v.vehicleType;
-        const existingHalfW = VEHICLE_CONFIGS[existingType].collisionW / 2;
+        const existingHalfW = VEHICLE_CONFIGS[existingType].width / 2;
         const buffer = Math.max(
           VEHICLE_CONFIGS[existingType].spawnBuffer,
           newVehicleCfg.spawnBuffer
@@ -486,8 +547,16 @@ export class GameplayScene {
         const actualDist = Math.abs(v.container.x - x);
         return actualDist < minDist;
       });
+      
+      let collidesWithItem = false;
+      if (!this.hasPackage && this.package?.active && Math.abs(this.package.container.y - ly) < 10) {
+         if (Math.abs(this.package.container.x - x) < 200) collidesWithItem = true;
+      }
+      if (this.hasPackage && this.deliveryPoint?.active && Math.abs(this.deliveryPoint.container.y - ly) < 10) {
+         if (Math.abs(this.deliveryPoint.container.x - x) < 200) collidesWithItem = true;
+      }
 
-      if (!tooClose) safeLanes.push(l);
+      if (!tooClose && !collidesWithItem) safeLanes.push(l);
     }
 
     // Không có lane an toàn → bỏ qua lần spawn này

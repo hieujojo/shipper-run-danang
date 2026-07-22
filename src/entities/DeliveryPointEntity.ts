@@ -1,7 +1,7 @@
 import { Container, Graphics } from "pixi.js";
 import { CollisionComponent } from "../components/CollisionComponent";
 
-const POINT_SIZE = 40;
+const POINT_SIZE = 65;
 
 export class DeliveryPointEntity {
   container: Container;

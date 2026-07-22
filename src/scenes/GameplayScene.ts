@@ -179,10 +179,11 @@ export class GameplayScene {
     const level = levelData.levels[this.currentLevelIndex ?? 0];
     const cfg: LandmarkEventConfig = {
       assetPath: level.assetPath,
-      scaleMultiplier: level.landmarkEvent?.scaleMultiplier ?? 1.3,
+      width: level.landmarkEvent?.width,
       yOffsetRatio: level.landmarkEvent?.yOffsetRatio ?? 0.25,
       breathEffect: (level.landmarkEvent?.breathEffect as "fire" | "water" | null) ?? null,
       flipX: level.landmarkEvent?.flipX ?? false,
+      seamlessTile: (level.landmarkEvent?.seamlessTile as "mirror" | "repeat") ?? undefined,
     };
     this.landmarkEvent.init(cfg);
     const roadIdx = this.container.getChildIndex(this.roadContainer);

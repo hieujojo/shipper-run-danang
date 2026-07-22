@@ -20,6 +20,7 @@ function App() {
   const [landmark, setLandmark] = useState("");
   const [hasPackage, setHasPackage] = useState(false);
   const [landmarkVisible, setLandmarkVisible] = useState(false);
+  const [deliveredCount, setDeliveredCount] = useState(0);
 
   useEffect(() => {
     const app = new Application();
@@ -79,6 +80,7 @@ function App() {
         setTimeout(() => setLandmarkVisible(false), 3000);
       };
       gameLoop.onScoreUpdate = (s: number) => setScore(s);
+      gameLoop.onDeliveredCountChange = (c: number) => setDeliveredCount(c);
 
       gameLoop.start();
     })();
@@ -98,6 +100,7 @@ function App() {
   const handleRestart = () => {
     setScore(0);
     setLives(3);
+    setDeliveredCount(0);
     gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
   };
 
@@ -114,7 +117,7 @@ function App() {
         </>
       )}
       {gameState === GameState.GAME_OVER && (
-        <GameOverScreen score={score} region={landmark} onRestart={handleRestart} />
+        <GameOverScreen score={score} region={landmark} packageCount={deliveredCount} onRestart={handleRestart} />
       )}
     </div>
   );

@@ -13,6 +13,7 @@ export class GameLoop {
   private gameOverScene: GameOverScene;
   private scoreTimer: number = 0;
   private score: number = 0;
+  private deliveredCount: number = 0;
 
   onStateChange: ((state: GameState) => void) | null = null;
   onScoreUpdate: ((score: number) => void) | null = null;
@@ -20,6 +21,7 @@ export class GameLoop {
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
   onLivesChange: ((lives: number) => void) | null = null;
   onLandmarkEvent: ((active: boolean) => void) | null = null;
+  onDeliveredCountChange: ((count: number) => void) | null = null;
   private levelTimer: number = 0;
   private currentLevelIndex: number = 0;
   private readonly LEVEL_DURATION = 60 * 60; // 60 giây mỗi level
@@ -35,7 +37,9 @@ export class GameLoop {
     this.gameplayScene.onPackageChange = (val: boolean) => this.onPackageChange?.(val);
     this.gameplayScene.onScoreDelivery = (bonus: number) => {
       this.score += bonus;
+      this.deliveredCount++;
       this.onScoreUpdate?.(this.score);
+      this.onDeliveredCountChange?.(this.deliveredCount);
     };
     this.startScene.onStart = () => this.transitionTo(GameState.GAMEPLAY);
     this.gameOverScene.onRestart = () => this.transitionTo(GameState.GAMEPLAY);
@@ -91,6 +95,8 @@ export class GameLoop {
     if (state === GameState.GAMEPLAY) {
       this.levelTimer = 0;
       this.currentLevelIndex = 0;
+      this.deliveredCount = 0;
+      this.onDeliveredCountChange?.(this.deliveredCount);
       const firstLevel = levelData.levels[0];
      this.onLevelChange?.(firstLevel.name);
       this.onLandmarkEvent?.(firstLevel.isLandmarkEvent);

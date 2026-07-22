@@ -100,17 +100,17 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
           <FaBox /> Đang giao hàng — tìm điểm <FaCircle style={{ color: "#4ade80", fontSize: 10 }} />
         </div>
       )}
-      {/* Điểm */}
+     {/* Điểm */}
       <div style={{
         background: "rgba(0,0,0,0.6)",
         color: "white",
-        padding: "8px 16px",
+        padding: "clamp(4px, 1vh, 10px) clamp(8px, 2vw, 20px)",
         borderRadius: 8,
-        fontSize: 18,
+        fontSize: "clamp(12px, 2.5vw, 22px)",
         fontWeight: "bold",
         display: "flex",
         alignItems: "center",
-        gap: "8px"
+        gap: "clamp(4px, 1vw, 10px)"
       }}>
         <FaStar style={{ color: "#ffd700" }} /> {score}
       </div>
@@ -179,11 +179,11 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       <div style={{
         background: "rgba(0,0,0,0.6)",
         color: "#e74c3c",
-        padding: "8px 16px",
+        padding: "clamp(4px, 1vh, 10px) clamp(8px, 2vw, 20px)",
         borderRadius: 8,
-        fontSize: 18,
+        fontSize: "clamp(12px, 2.5vw, 22px)",
         display: "flex",
-        gap: "4px"
+        gap: "clamp(2px, 0.5vw, 6px)"
       }}>
         {Array.from({ length: lives }).map((_, i) => (
           <FaHeart key={i} />

@@ -154,7 +154,7 @@ export class GameplayScene {
 
     this.particles = new ParticleSystem();
     this.container.addChild(this.particles.container);
-
+    this.currentLevelIndex = 0;
     this.landmarkEvent = new LandmarkEventScene();
     this.isLandmarkEvent = false;
     this.speedOverride = 1.0;

@@ -127,11 +127,19 @@ function App() {
       {gameState === GameState.START && (
         <StartScreen onStart={handleStart} />
       )}
-      {gameState === GameState.GAMEPLAY && (
-        <>
+     {gameState === GameState.GAMEPLAY && (
+        <div style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: `min(100vw, ${100 * (16/9)}vh)`,
+          height: `min(100vh, ${100 * (9/16)}vw)`,
+          pointerEvents: "none",
+        }}>
           <HudOverlay score={score} lives={lives} hasPackage={hasPackage} />
           <LandmarkBanner name={landmark} visible={landmarkVisible} />
-        </>
+        </div>
       )}
       {gameState === GameState.GAME_OVER && (
         <GameOverScreen score={score} region={landmark} packageCount={deliveredCount} onRestart={handleRestart} />

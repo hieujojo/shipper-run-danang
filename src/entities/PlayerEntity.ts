@@ -2,6 +2,7 @@ import { Container, Sprite, Texture } from "pixi.js";
 import { PLAYER_WIDTH, PLAYER_HEIGHT, PLAYER_X_MIN, PLAYER_X_MAX } from "../core/constants";
 import { CollisionComponent } from "../components/CollisionComponent";
 import { InputComponent } from "../components/InputComponent";
+import type { IInputState } from "../components/InputComponent";
 import { EffectsManager } from "../utils/effectsManager";
 
 export interface IPlayerEntity {
@@ -55,6 +56,10 @@ export class PlayerEntity implements IPlayerEntity {
 
   getInputState() {
     return this.input.getState();
+  }
+
+  setTouchInput(partial: Partial<IInputState>): void {
+    this.input.setTouchState(partial);
   }
 
   update(deltaTime: number, boundTop: number, boundBottom: number): void {

@@ -4,13 +4,13 @@ import Stats from "stats.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./core/constants";
 import { GameLoop } from "./core/GameLoop";
 import { GameState } from "./core/GameState";
-import { useState, useEffect, useRef } from "react";
-import { StartScreen } from "./ui/StartScreen";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { GameStartScreen } from "./ui/GameStartScreen";
 import { LandmarkBanner } from "./ui/LandmarkBanner";
 import { HudOverlay } from "./ui/HudOverlay";
 import { GameOverScreen } from "./ui/GameOverScreen";
-
-// eslint-disable-next-line react-refresh/only-export-components
+import { MobileControls } from "./ui/MobileControls";
+import type { IInputState } from "./components/InputComponent";
 function App() {
   const containerRef = useRef<HTMLDivElement>(null);
   const gameLoopRef = useRef<GameLoop | null>(null);
@@ -21,6 +21,21 @@ function App() {
   const [hasPackage, setHasPackage] = useState(false);
   const [landmarkVisible, setLandmarkVisible] = useState(false);
   const [deliveredCount, setDeliveredCount] = useState(0);
+  const [isMobile, setIsMobile] = useState(() =>
+    navigator.maxTouchPoints > 0 ||
+    /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    window.innerWidth <= 768
+  );
+
+  useEffect(() => {
+    const handler = () => setIsMobile(
+      navigator.maxTouchPoints > 0 ||
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      window.innerWidth <= 768
+    );
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
   const landmarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onLevelChangeRef = useRef<(name: string) => void>(() => { });
   onLevelChangeRef.current = (name: string) => {
@@ -104,6 +119,10 @@ function App() {
     gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
   };
 
+  const handleTouchInput = useCallback((partial: Partial<IInputState>) => {
+    gameLoopRef.current?.setTouchInput(partial);
+  }, []);
+
  const handleRestart = () => {
     // Clear mọi timeout landmark đang pending từ lần chơi trước
     if (landmarkTimerRef.current) {
@@ -125,7 +144,7 @@ function App() {
     <div style={{ position: "relative", width: "100vw", height: "100vh", backgroundColor: "#000", overflow: "hidden" }}>
       <div ref={containerRef} style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }} />
       {gameState === GameState.START && (
-        <StartScreen onStart={handleStart} />
+        <GameStartScreen onStart={handleStart} />
       )}
      {gameState === GameState.GAMEPLAY && (
         <div style={{
@@ -139,6 +158,7 @@ function App() {
         }}>
           <HudOverlay score={score} lives={lives} hasPackage={hasPackage} />
           <LandmarkBanner name={landmark} visible={landmarkVisible} />
+          {isMobile && <MobileControls onInput={handleTouchInput} />}
         </div>
       )}
       {gameState === GameState.GAME_OVER && (

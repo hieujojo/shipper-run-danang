@@ -51,6 +51,10 @@ export class InputComponent {
     return this.state;
   }
 
+  setTouchState(partial: Partial<IInputState>): void {
+    Object.assign(this.state, partial);
+  }
+
   destroy(): void {
     window.removeEventListener("keydown", this.onKeyDown);
     window.removeEventListener("keyup", this.onKeyUp);

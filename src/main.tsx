@@ -5,7 +5,7 @@ import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./core/constants";
 import { GameLoop } from "./core/GameLoop";
 import { GameState } from "./core/GameState";
 import { useState, useEffect, useRef } from "react";
-import { StartScreen } from "./ui/StartScreen";
+import { GameStartScreen } from "./ui/GameStartScreen";
 import { LandmarkBanner } from "./ui/LandmarkBanner";
 import { HudOverlay } from "./ui/HudOverlay";
 import { GameOverScreen } from "./ui/GameOverScreen";
@@ -125,7 +125,7 @@ function App() {
     <div style={{ position: "relative", width: "100vw", height: "100vh", backgroundColor: "#000", overflow: "hidden" }}>
       <div ref={containerRef} style={{ width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center" }} />
       {gameState === GameState.START && (
-        <StartScreen onStart={handleStart} />
+        <GameStartScreen onStart={handleStart} />
       )}
      {gameState === GameState.GAMEPLAY && (
         <div style={{

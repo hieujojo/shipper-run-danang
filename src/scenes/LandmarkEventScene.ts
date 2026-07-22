@@ -8,6 +8,7 @@ export interface LandmarkEventConfig {
   scaleMultiplier?: number;
   yOffsetRatio?: number;
   breathEffect?: "fire" | "water" | null;
+  flipX?: boolean;
 }
 
 export class LandmarkEventScene {
@@ -31,7 +32,7 @@ export class LandmarkEventScene {
 
     const {
       assetPath,
-      scaleMultiplier = 1.3,
+      scaleMultiplier = 2.3,
       yOffsetRatio = 0.25,
       breathEffect = null,
     } = cfg;
@@ -46,9 +47,11 @@ export class LandmarkEventScene {
 
     for (let i = 0; i < 2; i++) {
       const s = new Sprite(tex);
+      s.anchor.set(0.5, 0);
       s.width = CANVAS_WIDTH;
       s.height = scaledH;
-      s.x = i * CANVAS_WIDTH;
+      if (cfg.flipX) s.scale.x *= -1;
+      s.x = i * CANVAS_WIDTH + CANVAS_WIDTH / 2;
       this.topContainer.addChild(s);
     }
 
@@ -59,18 +62,21 @@ export class LandmarkEventScene {
 
     for (let i = 0; i < 2; i++) {
       const s = new Sprite(tex);
+      s.anchor.set(0.5, 1);
       s.width = CANVAS_WIDTH;
       s.height = scaledH;
-      s.anchor.set(0, 1);
-      s.scale.y = -1;
-      s.x = i * CANVAS_WIDTH;
+      s.scale.y = -Math.abs(s.scale.y); // Giữ nguyên tỷ lệ đã scale, chỉ lật ngược
+      if (cfg.flipX) s.scale.x *= -1;
+      s.x = i * CANVAS_WIDTH + CANVAS_WIDTH / 2;
       this.bottomContainer.addChild(s);
     }
 
     // Dragon logic — chỉ dùng khi có breathEffect
     if (breathEffect) {
       this.dragon = new DragonEntity();
-      this.dragon.init(CANVAS_WIDTH * 0.75, CANVAS_HEIGHT * 0.09);
+      // Dời vị trí phun lửa sang trái nếu lật ảnh
+      const dragonX = cfg.flipX ? CANVAS_WIDTH * 0.25 : CANVAS_WIDTH * 0.75;
+      this.dragon.init(dragonX, CANVAS_HEIGHT * 0.09);
       this.dragon.container.visible = false;
       this.dragon.onBreathStart = (type: DragonBreath) => this.handleBreathStart(type);
       this.dragon.onBreathEnd = () => this.handleBreathEnd();

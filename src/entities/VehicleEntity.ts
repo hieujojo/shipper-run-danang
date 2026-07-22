@@ -20,6 +20,8 @@ interface VehicleConfig {
   speedFactor: number;
   flipX?: boolean;
   spawnBuffer: number;
+  smokeOffset: number;
+  smokeOffsetY?: number;
 }
 
 export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
@@ -31,6 +33,7 @@ export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
     collisionH: 32,
     speedFactor: 1.0,
     spawnBuffer: 30,
+    smokeOffset: 90,
   },
   [VehicleType.MOTORBIKE]: {
     assetKey: "/assets/vehicle_motorbike.png",
@@ -41,6 +44,8 @@ export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
     speedFactor: 1.0,
     flipX: true,
     spawnBuffer: 30,
+    smokeOffset: 40,
+    smokeOffsetY: 15,
   },
   [VehicleType.BUS]: {
     assetKey: "/assets/vehicle_bus.png",
@@ -50,6 +55,7 @@ export const VEHICLE_CONFIGS: Record<VehicleType, VehicleConfig> = {
     collisionH: 78,
     speedFactor: 1.0,
     spawnBuffer: 60,
+    smokeOffset: 150,
   },
 };
 

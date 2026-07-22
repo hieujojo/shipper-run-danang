@@ -6,7 +6,8 @@
       "landmarkEvent": {
         "scaleMultiplier": 1.3,
         "yOffsetRatio": 0.25,
-        "breathEffect": "fire"
+        "breathEffect": "fire",
+        "flipX": true
       },
       "name": "Cầu Rồng",
       "isLandmarkEvent": true,

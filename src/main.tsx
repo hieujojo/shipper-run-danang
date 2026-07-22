@@ -33,9 +33,6 @@ function App() {
     if (window.location.search.includes('debug=1')) {
       document.body.appendChild(stats.dom);
     }
-    app.ticker.add(() => {
-      stats.update();
-    });
 
     (async () => {
       await app.init({
@@ -44,6 +41,10 @@ function App() {
         backgroundColor: 0x000000,
         resolution: window.devicePixelRatio || 1,
         autoDensity: true,
+      });
+
+      app.ticker.add(() => {
+        stats.update();
       });
 
       // Tải trước các ảnh Pixel Art

@@ -24,7 +24,6 @@ export class InputComponent {
     // Chỉ preventDefault các phím dùng trong game để tránh kẹt focus vào UI/Browser
     if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(e.code)) {
       e.preventDefault();
-      console.log("InputComponent - KeyDown prevented default:", e.code);
     }
     switch (e.code) {
       case "ArrowLeft": this.state.left = true; break;
@@ -38,7 +37,6 @@ export class InputComponent {
   private onKeyUp = (e: KeyboardEvent): void => {
     if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Space"].includes(e.code)) {
       e.preventDefault();
-      console.log("InputComponent - KeyUp prevented default:", e.code);
     }
     switch (e.code) {
       case "ArrowLeft": this.state.left = false; break;

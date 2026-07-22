@@ -20,6 +20,9 @@ export class GameLoop {
   onLivesChange: ((lives: number) => void) | null = null;
   onLandmarkEvent: ((active: boolean) => void) | null = null;
   onDeliveredCountChange: ((count: number) => void) | null = null;
+  setTouchInput(partial: Partial<{ up: boolean; down: boolean; left: boolean; right: boolean; space: boolean }>): void {
+    this.gameplayScene?.setTouchInput(partial);
+  }
   private levelTimer: number = 0;
   private currentLevelIndex: number = 0;
   private readonly LEVEL_DURATION = 60 * 60; // 60 giây mỗi level

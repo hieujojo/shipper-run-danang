@@ -595,6 +595,10 @@ export class GameplayScene {
     return VehicleType.BUS;
   }
 
+  setTouchInput(partial: Partial<{ up: boolean; down: boolean; left: boolean; right: boolean; space: boolean }>): void {
+    this.player?.setTouchInput(partial);
+  }
+
   destroy(): void {
     this.player?.destroy();
     this.particles.clear();

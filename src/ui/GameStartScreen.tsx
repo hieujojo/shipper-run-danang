@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaTruck, FaFire } from 'react-icons/fa';
 import { GiPalmTree } from 'react-icons/gi';
+import { MdScreenRotation } from 'react-icons/md';
 
 interface GameStartScreenProps {
   onStart: () => void;
@@ -79,6 +80,19 @@ export function GameStartScreen({ onStart }: GameStartScreenProps) {
       align-items: center;
       font-weight: 600;
       line-height: 1.4;
+    }
+
+    .ss-rotate-hint {
+      font-size: clamp(0.6rem, 1.6vw, 0.95rem);
+      color: #f1c40f;
+      display: flex;
+      gap: clamp(5px, 1.2vw, 10px);
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      line-height: 1.3;
+      margin-top: clamp(6px, 1.2vh, 12px);
+      text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
     }
     
     .ss-button {
@@ -218,6 +232,9 @@ export function GameStartScreen({ onStart }: GameStartScreenProps) {
       .ss-button {
         padding: 7px 22px;
       }
+      .ss-rotate-hint {
+        display: none;
+      }
     }
 
     /* Extra low height landscape */
@@ -324,6 +341,11 @@ export function GameStartScreen({ onStart }: GameStartScreenProps) {
              <span style={{ whiteSpace: "nowrap" }}><kbd style={kbdStyle}>↓</kbd> Xuống</span>
              <span style={{ whiteSpace: "nowrap" }}><kbd style={kbdStyle}>Space</kbd> Phóng!</span>
           </div>
+
+          <p className="ss-rotate-hint">
+            <MdScreenRotation style={{ fontSize: "1.2em" }} />
+            Xoay ngang màn hình khi chơi bằng điện thoại
+          </p>
         </div>
 
         <button className="ss-button" onClick={onStart}

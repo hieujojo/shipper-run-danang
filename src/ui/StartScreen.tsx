@@ -1,4 +1,6 @@
 import React from 'react';
+import { FaTruck, FaFire } from 'react-icons/fa';
+import { GiPalmTree } from 'react-icons/gi';
 
 interface StartScreenProps {
   onStart: () => void;
@@ -73,9 +75,12 @@ export function StartScreen({ onStart }: StartScreenProps) {
           fontSize: "clamp(4rem, 8vw, 6rem)",
           animation: "drive 0.6s infinite ease-in-out",
           marginBottom: "-10px",
-          filter: "drop-shadow(0 5px 15px rgba(0,0,0,0.6))"
+          filter: "drop-shadow(0 5px 15px rgba(0,0,0,0.6))",
+          display: "flex",
+          gap: "10px",
+          alignItems: "center"
         }}>
-          🛵💨
+          <FaTruck style={{ fontSize: "1em" }} />
         </div>
 
         <h1 style={{ 
@@ -108,9 +113,13 @@ export function StartScreen({ onStart }: StartScreenProps) {
             color: "#f1c40f",
             fontWeight: 800,
             textTransform: "uppercase",
-            textShadow: "1px 1px 3px rgba(0,0,0,0.8)"
+            textShadow: "1px 1px 3px rgba(0,0,0,0.8)",
+            display: "flex",
+            gap: "12px",
+            alignItems: "center",
+            justifyContent: "center"
           }}>
-            🌴 Đà Nẵng Edition 🌉
+            <GiPalmTree /> Đà Nẵng Edition <span style={{ fontSize: "0.9em" }}>🌉</span>
           </p>
           
           <div style={{ 
@@ -149,7 +158,9 @@ export function StartScreen({ onStart }: StartScreenProps) {
         onMouseEnter={(e) => e.currentTarget.style.transform = "scale(1.1) translateY(-4px)"}
         onMouseLeave={(e) => e.currentTarget.style.transform = "scale(1) translateY(0)"}
         >
-          🔥 CHƠI THÔI NÀO
+          <span style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center" }}>
+            <FaFire /> CHƠI THÔI NÀO
+          </span>
         </button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { FaBomb } from 'react-icons/fa';
 
 // Định nghĩa kiểu cho Props của Component
 interface GameOverScreenProps {
@@ -101,9 +102,10 @@ export function GameOverScreen({ score, region, packageCount, onRestart }: GameO
             justifyContent: 'center',
             lineHeight: 1.1,
             padding: '0 15px',
+            gap: '1vw'
           }}
         >
-          <span style={{ marginRight: '1vw' }}>💥</span> HẾT GIỜ RỒI!
+          <FaBomb style={{ fontSize: '0.8em' }} /> HẾT GIỜ RỒI!
         </h1>
 
         {/* Tiêu đề phụ + số gói đã giao */}

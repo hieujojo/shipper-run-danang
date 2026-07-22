@@ -1,4 +1,6 @@
- interface LandmarkBannerProps {
+import { FaMapMarkerAlt } from 'react-icons/fa';
+
+interface LandmarkBannerProps {
   name: string;
   visible: boolean;
 }
@@ -28,8 +30,8 @@ export function LandmarkBanner({ name, visible }: LandmarkBannerProps) {
         <div style={{ fontSize: 11, color: "#e74c3c", marginBottom: 4 }}>
           ĐỊA DANH
         </div>
-        <div style={{ fontSize: 18, fontWeight: "bold" }}>
-          📍 {name}
+        <div style={{ fontSize: 18, fontWeight: "bold", display: "flex", alignItems: "center", gap: "8px" }}>
+          <FaMapMarkerAlt /> {name}
         </div>
       </div>
     </div>

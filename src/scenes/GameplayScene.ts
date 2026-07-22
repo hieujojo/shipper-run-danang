@@ -198,19 +198,46 @@ export class GameplayScene {
     this.landmarkEvent.destroy();
   }
 
+  private getSafeLaneForEntity(x: number, width: number): number {
+    const safeLanes: number[] = [];
+    const SPAWN_CHECK_ZONE = 300;
+
+    for (let l = 0; l < LANE_COUNT; l++) {
+      const ly = this.lanePositions[l];
+      
+      const tooClose = this.activeVehicles.some((v) => {
+        if (Math.abs(v.container.y - ly) >= 10) return false;
+        if (v.container.x < x - SPAWN_CHECK_ZONE) return false;
+        
+        const existingType = v.vehicleType;
+        const existingHalfW = VEHICLE_CONFIGS[existingType].width / 2;
+        const minDist = existingHalfW + width / 2 + 50;
+        const actualDist = Math.abs(v.container.x - x);
+        return actualDist < minDist;
+      });
+
+      if (!tooClose) safeLanes.push(l);
+    }
+    
+    if (safeLanes.length > 0) {
+       return safeLanes[Math.floor(Math.random() * safeLanes.length)];
+    }
+    return Math.floor(Math.random() * LANE_COUNT);
+  }
+
   private spawnPackage(): void {
     if (!this.package) return;
-    const lane = Math.floor(Math.random() * LANE_COUNT);
-    const y = this.lanePositions[lane];
     const x = CANVAS_WIDTH + 100;
+    const lane = this.getSafeLaneForEntity(x, 45);
+    const y = this.lanePositions[lane];
     this.package.init(x, y);
   }
 
   private spawnDeliveryPoint(): void {
     if (!this.deliveryPoint) return;
-    const lane = Math.floor(Math.random() * LANE_COUNT);
-    const y = this.lanePositions[lane];
     const x = CANVAS_WIDTH + 100;
+    const lane = this.getSafeLaneForEntity(x, 65);
+    const y = this.lanePositions[lane];
     this.deliveryPoint.init(x, y);
   }
 
@@ -221,6 +248,7 @@ export class GameplayScene {
 
     if (!this.hasPackage && this.package.active) {
       this.package.container.x -= envSpeed;
+      this.package.syncBounds();
       if (this.package.container.x < -100) {
         this.package.reset();
         this.spawnPackage();
@@ -236,6 +264,7 @@ export class GameplayScene {
 
     if (this.hasPackage && this.deliveryPoint.active) {
       this.deliveryPoint.container.x -= envSpeed;
+      this.deliveryPoint.syncBounds();
       if (this.deliveryPoint.container.x < -100) {
         this.deliveryPoint.reset();
         this.spawnDeliveryPoint();
@@ -509,8 +538,16 @@ export class GameplayScene {
         const actualDist = Math.abs(v.container.x - x);
         return actualDist < minDist;
       });
+      
+      let collidesWithItem = false;
+      if (!this.hasPackage && this.package?.active && Math.abs(this.package.container.y - ly) < 10) {
+         if (Math.abs(this.package.container.x - x) < 200) collidesWithItem = true;
+      }
+      if (this.hasPackage && this.deliveryPoint?.active && Math.abs(this.deliveryPoint.container.y - ly) < 10) {
+         if (Math.abs(this.deliveryPoint.container.x - x) < 200) collidesWithItem = true;
+      }
 
-      if (!tooClose) safeLanes.push(l);
+      if (!tooClose && !collidesWithItem) safeLanes.push(l);
     }
 
     // Không có lane an toàn → bỏ qua lần spawn này

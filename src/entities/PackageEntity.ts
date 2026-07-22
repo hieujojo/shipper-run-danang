@@ -1,7 +1,7 @@
 import { Container, Sprite, Texture } from "pixi.js";
 import { CollisionComponent } from "../components/CollisionComponent";
 
-const PACKAGE_SIZE = 20;
+const PACKAGE_SIZE = 30;
 
 export class PackageEntity {
   container: Container;

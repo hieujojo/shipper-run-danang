@@ -3,9 +3,15 @@
     {
       "id": 1,
       "key": "cau-rong",
+      "landmarkEvent": {
+        "width": 1664,
+        "yOffsetRatio": 0.25,
+        "breathEffect": "fire",
+        "flipX": true
+      },
       "name": "Cầu Rồng",
-      "isDragonEvent": true,
-      "assetPath": "/assets/dragon_bridge.png",
+      "isLandmarkEvent": true,
+      "assetPath": "/assets/cau-rong-landmark.png",
       "difficulty": "event",
       "laneCount": 3,
       "baseSpeed": 6,
@@ -13,37 +19,88 @@
       "rushHourMultiplier": 2.5,
       "initialMultiplier": 0.5,
       "speedIncreaseRate": 0.03,
-      "maxSpeedMultiplier": 3.5
+      "maxSpeedMultiplier": 3.5,
+      "traffic": {
+        "waveMinSize": 1,
+        "waveMaxSize": 3,
+        "intraWaveGap": 45,
+        "waveCooldownMin": 90,
+        "waveCooldownMax": 150,
+        "speedVariance": 0.08,
+        "vehicleWeights": {
+          "car": 62,
+          "motorbike": 30,
+          "bus": 8
+        }
+      }
     },
     {
       "id": 2,
-      "key": "pham-van-dong",
-      "name": "Đại lộ Phạm Văn Đồng",
-      "isDragonEvent": false,
-      "assetPath": "",
-      "difficulty": "low",
-      "laneCount": 4,
-      "baseSpeed": 3,
-      "trafficDensity": 0.3,
-      "rushHourMultiplier": 1.5,
-      "initialMultiplier": 1.0,
-      "speedIncreaseRate": 0.02,
-      "maxSpeedMultiplier": 2.5
+      "key": "cau-song-han",
+      "name": "Cầu Sông Hàn",
+      "isLandmarkEvent": true,
+      "assetPath": "/assets/cau-song-han_landmark.png",
+      "difficulty": "medium",
+      "laneCount": 3,
+      "baseSpeed": 4,
+      "trafficDensity": 0.5,
+      "rushHourMultiplier": 2.0,
+      "initialMultiplier": 0.7,
+      "speedIncreaseRate": 0.022,
+      "maxSpeedMultiplier": 3.0,
+      "landmarkEvent": {
+        "width": 1408,
+        "yOffsetRatio": 0.2,
+        "breathEffect": null,
+        "seamlessTile": "mirror"
+      },
+      "traffic": {
+        "waveMinSize": 1,
+        "waveMaxSize": 2,
+        "intraWaveGap": 50,
+        "waveCooldownMin": 110,
+        "waveCooldownMax": 180,
+        "speedVariance": 0.2,
+        "vehicleWeights": {
+          "car": 62,
+          "motorbike": 30,
+          "bus": 8
+        }
+      }
     },
     {
       "id": 3,
-      "key": "ngo-quyen",
-      "name": "Ngã tư Ngô Quyền",
-      "isDragonEvent": false,
-      "assetPath": "",
-      "difficulty": "high",
-      "laneCount": 3,
-      "baseSpeed": 5,
-      "trafficDensity": 0.7,
+      "key": "cau-tran-thi-ly",
+      "name": "Cầu Trần Thị Lý",
+      "isLandmarkEvent": true,
+      "assetPath": "/assets/cau-tran-thi-ly_landmark.png",
+      "difficulty": "hard",
+     "laneCount": 3,
+      "baseSpeed": 4,
+      "trafficDensity": 0.5,
       "rushHourMultiplier": 2.0,
-      "initialMultiplier": 0.4,
-      "speedIncreaseRate": 0.025,
-      "maxSpeedMultiplier": 3.0
+      "initialMultiplier": 0.7,
+      "speedIncreaseRate": 0.022,
+      "maxSpeedMultiplier": 3.0,
+      "landmarkEvent": {
+        "width": 1408,
+        "yOffsetRatio": 0.1,
+        "breathEffect": null,
+        "seamlessTile": "mirror"
+      },
+      "traffic": {
+        "waveMinSize": 1,
+        "waveMaxSize": 2,
+        "intraWaveGap": 50,
+        "waveCooldownMin": 110,
+        "waveCooldownMax": 180,
+        "speedVariance": 0.2,
+        "vehicleWeights": {
+          "car": 62,
+          "motorbike": 30,
+          "bus": 8
+        }
+      }
     }
   ]
 }

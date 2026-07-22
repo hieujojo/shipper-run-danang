@@ -139,14 +139,43 @@ let state = "start";
 
 1. Mỗi level map với 1 địa danh Đà Nẵng thực tế.
 2. Độ khó tăng theo `rushHourTimer` — KHÔNG hardcode difficulty.
-3. Địa danh hiện tại: `Phạm Văn Đồng`, `Ngã tư Ngô Quyền`, `Cầu Rồng`.
-4. Thêm địa danh mới (Hội An, Huế...) chỉ cần thêm vào `levelData.json` — KHÔNG sửa engine.
-5. **Asset địa danh:** Mỗi địa danh có visual event BẮT BUỘC có PNG nền trong suốt đặt tại `public/assets/`. Thêm vào `Assets.load()` trong `main.tsx` trước khi dùng.
-6. **Thứ tự layer địa danh:** Dragon/Landmark sprite LUÔN nằm giữa `baseEnvironment` và `roadContainer` — dùng `getChildIndex` thay vì hardcode index.
+3. Địa danh hiện tại: `Cầu Rồng` (id:1), `Cầu Sông Hàn` (id:2), `Cầu Trần Thị Lý` (id:3).
+4. `laneCount` luôn cố định **3 làn** — KHÔNG thay đổi giá trị này khi thêm địa danh mới.
+5. Thêm địa danh mới (Bà Nà Hills, Ngũ Hành Sơn...) chỉ cần thêm vào `levelData.json` — KHÔNG sửa engine.
+6. **Asset địa danh:** Mỗi địa danh có visual event BẮT BUỘC có PNG nền trong suốt đặt tại `public/assets/`. Thêm vào `Assets.load()` trong `main.tsx` trước khi dùng.
+7. **Thứ tự layer địa danh:** Dragon/Landmark sprite LUÔN nằm giữa `baseEnvironment` và `roadContainer` — dùng `getChildIndex` thay vì hardcode index.
 
 ---
 
-## ✅ 9. Checklist trước khi commit
+## 🚗 9. Traffic System Rules
+
+1. **Wave-based spawning bắt buộc:** Xe xuất hiện theo wave (sóng), KHÔNG spawn đơn lẻ theo timer cứng nhắc.
+2. **Traffic config trong JSON:** Mọi config traffic BẮT BUỘC nằm trong `levelData.json` → `traffic` object:
+   - `waveMinSize`, `waveMaxSize`: Số xe trong 1 wave
+   - `intraWaveGap`: Khoảng cách (frames) giữa xe trong cùng wave
+   - `waveCooldownMin`, `waveCooldownMax`: Khoảng nghỉ giữa các wave
+   - `speedVariance`: Biến động tốc độ giữa các xe (0.0-1.0)
+   - `vehicleWeights`: Tỷ lệ xuất hiện từng loại xe (`car`, `motorbike`, `bus`)
+3. **Vehicle types:** Game có 3 loại xe cố định — Car, Motorbike, Bus. Mỗi loại có:
+   - Asset PNG riêng trong `public/assets/` (ví dụ: `vehicle_motorbike.png`)
+   - Kích thước và collision bounds riêng (config trong `VehicleEntity.ts` → `VEHICLE_CONFIGS`)
+   - Speed factor riêng (motorbike nhanh hơn, bus chậm hơn)
+4. **Thêm loại xe mới:** BẮT BUỘC có PNG pixel art asset, thêm vào enum `VehicleType` và `VEHICLE_CONFIGS` trong `VehicleEntity.ts`.
+### 🚗 Vehicle Config — Single Source of Truth
+
+5. **`VEHICLE_CONFIGS` là nguồn duy nhất** cho kích thước và collision của xe:
+   - Mọi logic dùng `collisionW`, `collisionH`, `width`, `height` của xe
+     BẮT BUỘC đọc từ `VEHICLE_CONFIGS[type]` trong `VehicleEntity.ts`.
+   - KHÔNG hardcode collision width/height ở bất kỳ file nào khác.
+   - `VEHICLE_CONFIGS` BẮT BUỘC được `export` để các module khác import.
+
+6. **Thêm loại xe mới** chỉ cần 2 bước:
+   1. Thêm entry vào `VehicleType` enum.
+   2. Thêm entry vào `VEHICLE_CONFIGS` với đầy đủ các field.
+   → Không cần sửa bất kỳ file nào khác (GameplayScene, spawner...).
+---
+
+## ✅ 10. Checklist trước khi commit
 
 - [ ] Không có `console.log` thừa
 - [ ] Không có `any` type

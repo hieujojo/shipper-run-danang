@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import { Application, Assets } from "pixi.js";
+import Stats from "stats.js";
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from "./core/constants";
 import { GameLoop } from "./core/GameLoop";
 import { GameState } from "./core/GameState";
@@ -19,9 +20,30 @@ function App() {
   const [landmark, setLandmark] = useState("");
   const [hasPackage, setHasPackage] = useState(false);
   const [landmarkVisible, setLandmarkVisible] = useState(false);
-
+  const [deliveredCount, setDeliveredCount] = useState(0);
+  const landmarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onLevelChangeRef = useRef<(name: string) => void>(() => { });
+  onLevelChangeRef.current = (name: string) => {
+    if (landmarkTimerRef.current) clearTimeout(landmarkTimerRef.current);
+    setLandmark(name);
+    setLandmarkVisible(true);
+    landmarkTimerRef.current = setTimeout(() => {
+      setLandmarkVisible(false);
+    }, 3000);
+  };
   useEffect(() => {
     const app = new Application();
+    // Expose app to global scope for PixiJS DevTools
+    if (import.meta.env.DEV) {
+      (globalThis as any).__PIXI_APP__ = app;
+    }
+
+    const stats = new Stats();
+    stats.showPanel(0);
+    if (window.location.search.includes('debug=1')) {
+      document.body.appendChild(stats.dom);
+    }
+
     (async () => {
       await app.init({
         width: CANVAS_WIDTH,
@@ -31,12 +53,20 @@ function App() {
         autoDensity: true,
       });
 
+      app.ticker.add(() => {
+        stats.update();
+      });
+
       // Tải trước các ảnh Pixel Art
       await Assets.load([
         "/assets/player_shipper.png",
         "/assets/vehicle_car.png",
+        "/assets/vehicle_motorbike.png",
+        "/assets/vehicle_bus.png",
         "/assets/package_box.png",
-        "/assets/dragon_bridge.png"
+        "/assets/cau-rong-landmark.png",
+        "/assets/cau-song-han_landmark.png",
+        "/assets/cau-tran-thi-ly_landmark.png",
       ]);
 
       if (containerRef.current) {
@@ -54,16 +84,18 @@ function App() {
       gameLoop.onLivesChange = (l: number) => setLives(l);
       gameLoop.onPackageChange = (val: boolean) => setHasPackage(val);
       gameLoop.onLevelChange = (name: string) => {
-        setLandmark(name);
-        setLandmarkVisible(true);
-        setTimeout(() => setLandmarkVisible(false), 3000);
+        onLevelChangeRef.current(name);
       };
       gameLoop.onScoreUpdate = (s: number) => setScore(s);
+      gameLoop.onDeliveredCountChange = (c: number) => setDeliveredCount(c);
 
       gameLoop.start();
     })();
 
     return () => {
+      if (document.body.contains(stats.dom)) {
+        document.body.removeChild(stats.dom);
+      }
       app.destroy(true);
     };
   }, []);
@@ -72,9 +104,20 @@ function App() {
     gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
   };
 
-  const handleRestart = () => {
+ const handleRestart = () => {
+    // Clear mọi timeout landmark đang pending từ lần chơi trước
+    if (landmarkTimerRef.current) {
+      clearTimeout(landmarkTimerRef.current);
+      landmarkTimerRef.current = null;
+    }
+
+    // Force reset state về đúng trạng thái ban đầu TRƯỚC khi GameLoop callback chạy
     setScore(0);
     setLives(3);
+    setDeliveredCount(0);
+    setHasPackage(false);
+    setLandmark("Cầu Rồng");
+    setLandmarkVisible(false);
     gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
   };
 
@@ -91,12 +134,12 @@ function App() {
         </>
       )}
       {gameState === GameState.GAME_OVER && (
-        <GameOverScreen score={score} onRestart={handleRestart} />
+        <GameOverScreen score={score} region={landmark} packageCount={deliveredCount} onRestart={handleRestart} />
       )}
     </div>
   );
 }
 
 createRoot(document.getElementById("root")!).render(
-    <App />
+  <App />
 );

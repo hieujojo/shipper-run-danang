@@ -13,13 +13,15 @@ export class GameLoop {
   private gameOverScene: GameOverScene;
   private scoreTimer: number = 0;
   private score: number = 0;
+  private deliveredCount: number = 0;
 
   onStateChange: ((state: GameState) => void) | null = null;
   onScoreUpdate: ((score: number) => void) | null = null;
   onLevelChange: ((levelName: string) => void) | null = null;
   onPackageChange: ((hasPackage: boolean) => void) | null = null;
   onLivesChange: ((lives: number) => void) | null = null;
-  onDragonEvent: ((active: boolean) => void) | null = null;
+  onLandmarkEvent: ((active: boolean) => void) | null = null;
+  onDeliveredCountChange: ((count: number) => void) | null = null;
   private levelTimer: number = 0;
   private currentLevelIndex: number = 0;
   private readonly LEVEL_DURATION = 60 * 60; // 60 giây mỗi level
@@ -35,7 +37,9 @@ export class GameLoop {
     this.gameplayScene.onPackageChange = (val: boolean) => this.onPackageChange?.(val);
     this.gameplayScene.onScoreDelivery = (bonus: number) => {
       this.score += bonus;
+      this.deliveredCount++;
       this.onScoreUpdate?.(this.score);
+      this.onDeliveredCountChange?.(this.deliveredCount);
     };
     this.startScene.onStart = () => this.transitionTo(GameState.GAMEPLAY);
     this.gameOverScene.onRestart = () => this.transitionTo(GameState.GAMEPLAY);
@@ -71,8 +75,8 @@ export class GameLoop {
             const level = levelData.levels[this.currentLevelIndex];
             this.onLevelChange?.(level.name);
             this.gameplayScene.setLevel(this.currentLevelIndex);
-            this.onDragonEvent?.(level.isDragonEvent);
-            this.gameplayScene.triggerDragonEvent(level.isDragonEvent);
+            this.onLandmarkEvent?.(level.isLandmarkEvent);
+            this.gameplayScene.triggerLandmarkEvent(level.isLandmarkEvent);
           }
           break;
         case GameState.GAME_OVER:
@@ -88,17 +92,27 @@ export class GameLoop {
   }
 
   transitionTo(state: GameState): void {
+    
     if (state === GameState.GAMEPLAY) {
-      this.levelTimer = 0;
+      // Reset game state
+      this.score = 0;
+      this.scoreTimer = 0;
+      this.levelTimer = -120; // Buffer -2 seconds to prevent immediate level progression
       this.currentLevelIndex = 0;
-      const firstLevel = levelData.levels[0];
-     this.onLevelChange?.(firstLevel.name);
-      this.onDragonEvent?.(firstLevel.isDragonEvent);
+      this.deliveredCount = 0;
     }
+    
     this.loadScene(state);
+    
     if (state === GameState.GAMEPLAY) {
       const firstLevel = levelData.levels[0];
-      this.gameplayScene.triggerDragonEvent(firstLevel.isDragonEvent);
+      // Notify React UI AFTER scene is loaded to prevent race conditions
+      this.onScoreUpdate?.(this.score);
+      this.onDeliveredCountChange?.(this.deliveredCount);
+      this.onPackageChange?.(false);
+      this.onLevelChange?.(firstLevel.name);
+      this.onLandmarkEvent?.(firstLevel.isLandmarkEvent);      
+      this.gameplayScene.triggerLandmarkEvent(firstLevel.isLandmarkEvent);
     }
   }
 

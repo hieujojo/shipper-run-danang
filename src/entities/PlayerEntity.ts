@@ -24,8 +24,8 @@ export class PlayerEntity implements IPlayerEntity {
     this.container = new Container();
     this.sprite = new Sprite(Texture.from("/assets/player_shipper.png"));
     this.sprite.anchor.set(0.5);
-    this.sprite.width = PLAYER_WIDTH * 1.5;
-    this.sprite.height = PLAYER_HEIGHT * 1.5;
+    this.sprite.width = PLAYER_WIDTH * 2;
+    this.sprite.height = PLAYER_HEIGHT * 2;
     this.collision = new CollisionComponent(0, 0, PLAYER_WIDTH, PLAYER_HEIGHT);
     this.input = new InputComponent();
     this.container.addChild(this.sprite);
@@ -51,6 +51,10 @@ export class PlayerEntity implements IPlayerEntity {
 
   isInvincible(): boolean {
     return this.invincibleTimer > 0;
+  }
+
+  getInputState() {
+    return this.input.getState();
   }
 
   update(deltaTime: number, boundTop: number, boundBottom: number): void {

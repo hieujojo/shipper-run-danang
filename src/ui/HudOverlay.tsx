@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { audioManager } from "../utils/audioManager";
+import { FaStar, FaBox, FaVolumeUp, FaVolumeMute, FaVolumeDown, FaHeart, FaCircle } from "react-icons/fa";
 
 interface HudOverlayProps {
   score: number;
@@ -59,9 +60,9 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
     background: "none",
     border: "none",
     color: "white",
-    fontSize: 14,
+    fontSize: 18,
     cursor: "pointer",
-    padding: "0 4px",
+    padding: "0 6px",
     lineHeight: 1,
   };
 
@@ -73,7 +74,7 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      padding: "0 16px",
+      padding: "0 20px",
       fontFamily: "sans-serif",
       pointerEvents: "none",
     }}>
@@ -81,7 +82,7 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       {hasPackage && (
         <div style={{
           position: "absolute",
-          bottom: 12,
+          top: 45,
           left: "50%",
           transform: "translateX(-50%)",
           background: "rgba(243,156,18,0.9)",
@@ -92,29 +93,36 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
           fontWeight: "bold",
           pointerEvents: "none",
           whiteSpace: "nowrap",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px"
         }}>
-          📦 Đang giao hàng — tìm điểm 🟢
+          <FaBox /> Đang giao hàng — tìm điểm <FaCircle style={{ color: "#4ade80", fontSize: 10 }} />
         </div>
       )}
       {/* Điểm */}
       <div style={{
         background: "rgba(0,0,0,0.6)",
         color: "white",
-        padding: "4px 12px",
-        borderRadius: 6,
-        fontSize: 14,
+        padding: "8px 16px",
+        borderRadius: 8,
+        fontSize: 18,
+        fontWeight: "bold",
+        display: "flex",
+        alignItems: "center",
+        gap: "8px"
       }}>
-        ⭐ {score}
+        <FaStar style={{ color: "#ffd700" }} /> {score}
       </div>
 
       {/* Volume control */}
       <div style={{
         display: "flex",
         alignItems: "center",
-        gap: 6,
+        gap: 10,
         background: "rgba(0,0,0,0.6)",
-        padding: "4px 10px",
-        borderRadius: 6,
+        padding: "8px 16px",
+        borderRadius: 8,
         pointerEvents: "all",
       }}>
         <button
@@ -122,7 +130,13 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
           style={iconButtonStyle}
           aria-label={muted ? "Bật tiếng" : "Tắt tiếng"}
         >
-          {muted || volume === 0 ? "🔇" : volume < 0.5 ? "🔉" : "🔊"}
+          {muted || volume === 0 ? (
+            <FaVolumeMute />
+          ) : volume < 0.5 ? (
+            <FaVolumeDown />
+          ) : (
+            <FaVolumeUp />
+          )}
         </button>
 
         <button
@@ -145,7 +159,8 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
           onFocus={(e) => e.currentTarget.blur()}
           tabIndex={-1}
           style={{
-            width: 70,
+            width: 100,
+            height: 6,
             accentColor: "#e74c3c",
             cursor: "pointer",
           }}
@@ -164,11 +179,15 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       <div style={{
         background: "rgba(0,0,0,0.6)",
         color: "#e74c3c",
-        padding: "4px 12px",
-        borderRadius: 6,
-        fontSize: 14,
+        padding: "8px 16px",
+        borderRadius: 8,
+        fontSize: 18,
+        display: "flex",
+        gap: "4px"
       }}>
-        {"❤️".repeat(lives)}
+        {Array.from({ length: lives }).map((_, i) => (
+          <FaHeart key={i} />
+        ))}
       </div>
     </div>
   );

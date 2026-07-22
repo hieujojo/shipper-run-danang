@@ -7,40 +7,28 @@
 ![Vite](https://img.shields.io/badge/Vite-5.x-646cff?style=flat-square)
 ![Deploy](https://img.shields.io/badge/Deploy-Vercel-black?style=flat-square)
 
+---
+
 ## 🎮 Giới thiệu
 
-**Shipper Run Đà Nẵng** là game đua xe giao hàng thể loại Endless Runner cuộn ngang (Side-scroller) mang phong cách **Pixel Art**, chạy trên trình duyệt web. Game kết hợp sức mạnh render mượt mà của **PixiJS v8** cho phần gameplay và **React** cho lớp giao diện người dùng (UI Layer).
+**Shipper Run Đà Nẵng** là game đua xe giao hàng thể loại Endless Runner cuộn ngang (Side-scroller) mang phong cách **Pixel Art**, chạy trên trình duyệt web. Game kết hợp sức mạnh render của **PixiJS v8** cho gameplay và **React** cho lớp giao diện người dùng.
 
-Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn trên các tuyến đường biểu tượng của Đà Nẵng — từ Đại lộ Phạm Văn Đồng đến Cầu Rồng huyền thoại. Mọi asset hình ảnh đều được tối ưu cho cảm giác retro hoài cổ.
+Người chơi vào vai một shipper luồn lách qua giao thông hỗn loạn trên các cầu biểu tượng của Đà Nẵng — từ Cầu Sông Hàn lung linh đến Cầu Rồng huyền thoại.
 
-## 🗺️ Địa danh trong game
-
-| Địa danh | Độ khó | Đặc điểm |
-|---|---|---|
-| Đại lộ Phạm Văn Đồng | ⭐ Thấp | Đường rộng, nhập môn |
-| Ngã tư Ngô Quyền | ⭐⭐⭐ Cao | Đường hẹp, giao thông hỗn loạn |
-| Cầu Rồng | 🐉 Sự kiện | PNG sprite Cầu Rồng thực tế, rồng phun lửa/nước — lửa tăng xe, nước tăng package |
-
-## 🕹️ Điều khiển
-
-| Phím | Hành động |
-|---|---|
-| `←` | Di chuyển sang trái |
-| `→` | Di chuyển sang phải |
-| `↑` | Di chuyển lên trên |
-| `↓` | Di chuyển xuống dưới |
-| `Space` (nhấn) | Boost tăng tốc (~2 giây) |
-| `Space` (giữ) | Brake giảm tốc |
+---
 
 ## 🛠️ Tech Stack
 
-- **Rendering:** PixiJS v8 (WebGL/Canvas cho Gameplay)
-- **Visual Effects:** PixiJS v8 Built-in Filters (BlurFilter, ColorMatrixFilter, AlphaFilter)
-- **UI Layer:** React (Menu, HUD, Game Over Screen)
-- **Build Tool:** Vite 5.x + TypeScript
-- **Audio:** Howler.js
-- **Deploy:** Vercel
-- **Graphics:** PIXI.Sprite (Pixel Art assets) + PIXI.Graphics + PixiJS Filters
+| Thành phần | Công nghệ |
+|---|---|
+| Rendering | PixiJS v8 (WebGL/Canvas) |
+| Visual Effects | PixiJS v8 Built-in Filters |
+| UI Layer | React 18 + react-icons v5 |
+| Build Tool | Vite 5.x + TypeScript |
+| Audio | Howler.js |
+| Deploy | Vercel |
+
+---
 
 ## 🚀 Chạy local
 
@@ -55,74 +43,158 @@ npm run dev
 npm run build
 ```
 
-## 📁 Cấu trúc thư mục
+---
 
-```text
-shipper-run-danang/
-├── src/
-│   ├── components/       # Logic & UI Components
-│   ├── core/             # Game loop, State machine, Constants
-│   ├── data/             # levelData.json (Cấu hình màn chơi)
-│   ├── entities/         # Player, Vehicle, Package, Coin
-│   ├── scenes/           # StartScene, GameplayScene, GameOverScene
-│   └── utils/            # Object pooling, helpers
-├── public/
-├── RULES.md              # AI coding rules
-└── index.html
-```
+## 🕹️ Điều khiển
+
+| Phím | Hành động |
+|---|---|
+| `←` | Di chuyển sang trái |
+| `→` | Di chuyển sang phải |
+| `↑` | Di chuyển lên trên |
+| `↓` | Di chuyển xuống dưới |
+| `Space` | Boost tăng tốc — giữ để duy trì |
 
 ---
 
-## 📜 Nguyên tắc phát triển (AI Coding Rules)
+## 🗺️ Địa danh trong game
 
-Mọi hoạt động phát triển, viết code và đóng góp cho dự án này **BẮT BUỘC** phải tuân thủ nghiêm ngặt các nguyên tắc được định nghĩa trong `RULES.md`. Vui lòng đọc kỹ tài liệu này trước khi tiến hành chỉnh sửa hoặc xây dựng tính năng mới.
+| Địa danh 
+|---|---|
+| Cầu Rồng 
+| Cầu Sông Hàn 
+| Cầu Trần Thị Lý 
 
 ---
 
-## ⚡ Cơ chế tốc độ tăng dần (Speed Scaling)
+## 🚗 Loại xe trong game
 
-Game áp dụng cơ chế tốc độ kiểu **Subway Surfers / Temple Run**:
+| Loại xe | Tốc độ | Tỷ lệ xuất hiện |
+|---|---|---|
+| 🚗 Xe con (Car) | 1.0x | ~60% |
+| 🏍️ Xe máy (Motorbike) | 1.0x | ~30% — đi ngược chiều |
+| 🚌 Xe buýt (Bus) | 1.0x | ~8% — chiếm cả làn |
 
-| Thời gian | Multiplier (Level 1) | Cảm giác |
+Xe xuất hiện theo **wave-based spawning** (1–4 xe/wave), tạo khoảng thở cho người chơi. Tỷ lệ và tốc độ cấu hình trong `levelData.json`.
+
+---
+
+## ✨ Visual Effects
+
+| Effect | Trigger | Mô tả |
+|---|---|---|
+| Invincible Blink | Va chạm xe | Player blink 120 frames, miễn nhiễm va chạm |
+| Speed Trail | `speedMultiplier > 1.1` | Khói xám phía sau xe khi boost |
+| Motion Blur | `speedMultiplier > 1.2` | Blur ngang nhẹ trên tất cả xe khi tốc độ cao |
+| Fire Tint | Cầu Rồng phun lửa | ColorMatrixFilter đỏ cam toàn cảnh + spawn xe x2 |
+| Water Tint | Cầu Rồng phun nước | ColorMatrixFilter xanh lạnh toàn cảnh + package x3 |
+
+---
+
+## ⚡ Cơ chế tốc độ tăng dần
+
+| Thời gian | Multiplier | Cảm giác |
 |---|---|---|
 | 0s | 0.3x | Chậm, học cách chơi |
 | 20s | ~0.7x | Đang vào nhịp |
 | 60s | ~1.5x | Tốc độ chuẩn |
 | ~110s | 2.5x (MAX) | Tốc độ tối đa, giữ nguyên |
 
-- **Tốc độ khởi đầu, tốc độ tăng, ngưỡng tối đa** đều cấu hình trong `levelData.json` — không hardcode.
-- `speedMultiplier` áp dụng đồng thời lên: scroll đường, tốc độ xe địch, tần suất spawn xe.
- 
-## ✨ Visual Effects (PixiJS Filters)
+Tốc độ khởi đầu, tốc độ tăng và ngưỡng tối đa đều cấu hình trong `levelData.json`.
 
-| Effect | Trigger | Mô tả |
-|---|---|---|
-| Invincible Blink | Va chạm xe | Player blink sáng/tối 120 frames, miễn nhiễm va chạm |
-| Speed Trail | `speedMultiplier > 1.2` | Khói xám phía sau shipper, càng nhanh càng dày |
-| Fire Tint | Cầu Rồng phun lửa | `ColorMatrixFilter` đỏ cam toàn cảnh + spawn xe x2 |
-| Water Tint | Cầu Rồng phun nước | `ColorMatrixFilter` xanh lạnh toàn cảnh + package xuất hiện nhanh x3 |
+---
 
 ## 🗺️ Thêm địa danh mới
 
 Chỉ cần thêm vào `src/data/levelData.json` — không cần sửa engine:
 
-\`\`\`json
+```json
 {
   "id": 4,
-  "key": "cau-song-han",
-  "name": "Cầu Sông Hàn",
-  "isDragonEvent": false,
+  "key": "ten-dia-danh",
+  "name": "Tên Địa Danh",
+  "isLandmarkEvent": true,
+  "assetPath": "/assets/ten-dia-danh_landmark.png",
   "difficulty": "medium",
   "laneCount": 3,
   "baseSpeed": 4,
   "trafficDensity": 0.5,
-  "initialMultiplier": 0.8,
+  "initialMultiplier": 0.7,
   "speedIncreaseRate": 0.022,
-  "maxSpeedMultiplier": 3.0
+  "maxSpeedMultiplier": 3.0,
+  "landmarkEvent": {
+    "scaleMultiplier": 1.3,
+    "yOffsetRatio": -0.1,
+    "seamlessTile": "mirror",
+    "breathEffect": null
+  }
 }
-\`\`\`
+```
 
-Để thêm **landmark có visual event** (như Cầu Rồng):
-1. Tạo PNG asset nền trong suốt → đặt vào `public/assets/`
-2. Thêm vào `Assets.load()` trong `src/main.tsx`
-3. Khai báo `isDragonEvent: true` và asset path trong `levelData.json`
+Sau đó thêm asset vào `public/assets/` và khai báo trong `Assets.load()` ở `src/main.tsx`.
+
+> `laneCount` luôn cố định **3**.
+
+---
+
+## 📁 Cấu trúc thư mục
+
+```
+shipper-run-danang/
+├── public/
+│   └── assets/              # Sprite PNG, background, landmark images
+├── src/
+│   ├── components/          # InputComponent và các logic component
+│   ├── core/                # GameLoop, GameState, Constants
+│   ├── data/                # levelData.json
+│   ├── entities/            # PlayerEntity, VehicleEntity, PackageEntity, DeliveryPointEntity
+│   ├── scenes/              # GameplayScene, LandmarkEventScene, GameOverScene
+│   ├── ui/                  # StartScreen, HudOverlay, LandmarkBanner, GameOverScreen
+│   └── utils/               # Object pooling, particleSystem, effectsManager
+├── RULES.md
+└── index.html
+```
+
+---
+
+## 📊 Debug & Hiệu suất
+
+### Stats.js — FPS Overlay
+
+Thêm `?debug=1` vào URL để bật bảng thống kê FPS/MS/MB:
+
+```
+http://localhost:5173/?debug=1
+```
+
+Click vào bảng để chuyển giữa các tab: **FPS**, **MS**, **MB**.
+
+**Benchmark tham khảo:**
+
+| Chỉ số | Mức lý tưởng |
+|---|---|
+| FPS | 60 – 100+ |
+| MS | < 16ms |
+| MB | < 100MB |
+
+### PixiJS DevTools — Scene Inspector
+
+1. Cài extension **PixiJS DevTools** cho [Chrome](https://chrome.google.com/webstore/detail/pixijs-devtools/dlkffcaaoccbofklocbjcmppahjjboce)
+2. Chạy `npm run dev`, mở game trên Chrome
+3. Bấm `F12` → chọn tab **PixiJS**
+
+Game tự động kết nối với extension thông qua `__PIXI_APP__` ở môi trường DEV.
+
+**Benchmark tham khảo:**
+
+| Chỉ số | Mức lý tưởng |
+|---|---|
+| Scene Nodes | < 200 nodes |
+| GPU Memory | < 50MB |
+| Draw Calls | < 50 (hiện tại ~3) |
+
+---
+
+## 📜 Nguyên tắc phát triển
+
+Mọi đóng góp **bắt buộc** tuân thủ quy ước trong `RULES.md`.

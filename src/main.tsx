@@ -114,7 +114,7 @@ function App() {
         </>
       )}
       {gameState === GameState.GAME_OVER && (
-        <GameOverScreen score={score} onRestart={handleRestart} />
+        <GameOverScreen score={score} region={landmark} onRestart={handleRestart} />
       )}
     </div>
   );

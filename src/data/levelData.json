@@ -4,7 +4,7 @@
       "id": 1,
       "key": "cau-rong",
       "landmarkEvent": {
-        "scaleMultiplier": 1.3,
+        "width": 1664,
         "yOffsetRatio": 0.25,
         "breathEffect": "fire",
         "flipX": true
@@ -49,9 +49,10 @@
       "speedIncreaseRate": 0.022,
       "maxSpeedMultiplier": 3.0,
       "landmarkEvent": {
-        "scaleMultiplier": 1.3,
-        "yOffsetRatio": 0.25,
-        "breathEffect": null
+        "width": 1408,
+        "yOffsetRatio": 0.2,
+        "breathEffect": null,
+        "seamlessTile": "mirror"
       },
       "traffic": {
         "waveMinSize": 1,
@@ -59,7 +60,7 @@
         "intraWaveGap": 50,
         "waveCooldownMin": 110,
         "waveCooldownMax": 180,
-        "speedVariance": 0.1,
+        "speedVariance": 0.2,
         "vehicleWeights": {
           "car": 62,
           "motorbike": 30,
@@ -82,9 +83,10 @@
       "speedIncreaseRate": 0.025,
       "maxSpeedMultiplier": 3.2,
       "landmarkEvent": {
-        "scaleMultiplier": 1.4,
-        "yOffsetRatio": 0.25,
-        "breathEffect": null
+        "width": 500,
+        "yOffsetRatio": 0.1,
+        "breathEffect": null,
+        "seamlessTile": "mirror"
       },
       "traffic": {
         "waveMinSize": 2,

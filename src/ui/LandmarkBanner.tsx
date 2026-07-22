@@ -1,6 +1,4 @@
-
-
-interface LandmarkBannerProps {
+ interface LandmarkBannerProps {
   name: string;
   visible: boolean;
 }

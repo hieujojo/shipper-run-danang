@@ -1,7 +1,8 @@
 import { Container, Graphics } from "pixi.js";
 import {
   CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT, TARGET_FPS,
-  BASE_SCROLL_SPEED, INITIAL_MULTIPLIER, SPEED_INCREASE_RATE, MAX_SPEED_MULTIPLIER
+  BASE_SCROLL_SPEED, INITIAL_MULTIPLIER, SPEED_INCREASE_RATE, MAX_SPEED_MULTIPLIER,
+  ROAD_TOP, ROAD_BOTTOM
 } from "../core/constants";
 import { PlayerEntity } from "../entities/PlayerEntity";
 import { VehicleEntity, VehicleType, VEHICLE_CONFIGS } from "../entities/VehicleEntity";
@@ -346,8 +347,8 @@ export class GameplayScene {
   }
 
   update(deltaTime: number): void {
-    const roadTop = CANVAS_HEIGHT * 0.2;
-    const roadBottom = CANVAS_HEIGHT * 0.8;
+    const roadTop = ROAD_TOP;
+    const roadBottom = ROAD_BOTTOM;
     this.player?.update(deltaTime, roadTop, roadBottom);
 
     this.elapsedTime += deltaTime / TARGET_FPS;

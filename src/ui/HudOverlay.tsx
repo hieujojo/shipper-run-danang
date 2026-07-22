@@ -59,9 +59,9 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
     background: "none",
     border: "none",
     color: "white",
-    fontSize: 14,
+    fontSize: 18,
     cursor: "pointer",
-    padding: "0 4px",
+    padding: "0 6px",
     lineHeight: 1,
   };
 
@@ -73,7 +73,7 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
-      padding: "0 16px",
+      padding: "0 20px",
       fontFamily: "sans-serif",
       pointerEvents: "none",
     }}>
@@ -81,7 +81,7 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       {hasPackage && (
         <div style={{
           position: "absolute",
-          bottom: 12,
+          top: 45,
           left: "50%",
           transform: "translateX(-50%)",
           background: "rgba(243,156,18,0.9)",
@@ -100,9 +100,10 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       <div style={{
         background: "rgba(0,0,0,0.6)",
         color: "white",
-        padding: "4px 12px",
-        borderRadius: 6,
-        fontSize: 14,
+        padding: "8px 16px",
+        borderRadius: 8,
+        fontSize: 18,
+        fontWeight: "bold",
       }}>
         ⭐ {score}
       </div>
@@ -111,10 +112,10 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       <div style={{
         display: "flex",
         alignItems: "center",
-        gap: 6,
+        gap: 10,
         background: "rgba(0,0,0,0.6)",
-        padding: "4px 10px",
-        borderRadius: 6,
+        padding: "8px 16px",
+        borderRadius: 8,
         pointerEvents: "all",
       }}>
         <button
@@ -145,7 +146,8 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
           onFocus={(e) => e.currentTarget.blur()}
           tabIndex={-1}
           style={{
-            width: 70,
+            width: 100,
+            height: 6,
             accentColor: "#e74c3c",
             cursor: "pointer",
           }}
@@ -164,9 +166,9 @@ export function HudOverlay({ score, lives, hasPackage }: HudOverlayProps) {
       <div style={{
         background: "rgba(0,0,0,0.6)",
         color: "#e74c3c",
-        padding: "4px 12px",
-        borderRadius: 6,
-        fontSize: 14,
+        padding: "8px 16px",
+        borderRadius: 8,
+        fontSize: 18,
       }}>
         {"❤️".repeat(lives)}
       </div>

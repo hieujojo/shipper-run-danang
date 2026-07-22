@@ -92,56 +92,27 @@ export class GameLoop {
   }
 
   transitionTo(state: GameState): void {
-    console.log('🔄 [GameLoop] transitionTo called:', state);
     
     if (state === GameState.GAMEPLAY) {
-      console.log('📊 [GameLoop] BEFORE reset:', JSON.stringify({
-        score: this.score,
-        currentLevelIndex: this.currentLevelIndex,
-        deliveredCount: this.deliveredCount,
-        levelTimer: this.levelTimer
-      }));
-      
       // Reset game state
       this.score = 0;
       this.scoreTimer = 0;
       this.levelTimer = -120; // Buffer -2 seconds to prevent immediate level progression
       this.currentLevelIndex = 0;
       this.deliveredCount = 0;
-      
-      console.log('✅ [GameLoop] AFTER reset:', JSON.stringify({
-        score: this.score,
-        currentLevelIndex: this.currentLevelIndex,
-        deliveredCount: this.deliveredCount,
-        levelTimer: this.levelTimer
-      }));
     }
     
-    console.log('🎬 [GameLoop] Calling loadScene...');
     this.loadScene(state);
     
     if (state === GameState.GAMEPLAY) {
       const firstLevel = levelData.levels[0];
-      console.log('🔔 [GameLoop] About to call callbacks with firstLevel:', firstLevel.name);
-      
       // Notify React UI AFTER scene is loaded to prevent race conditions
       this.onScoreUpdate?.(this.score);
-      console.log('✅ [GameLoop] Called onScoreUpdate(0)');
-      
       this.onDeliveredCountChange?.(this.deliveredCount);
-      console.log('✅ [GameLoop] Called onDeliveredCountChange(0)');
-      
       this.onPackageChange?.(false);
-      console.log('✅ [GameLoop] Called onPackageChange(false)');
-      
       this.onLevelChange?.(firstLevel.name);
-      console.log('✅ [GameLoop] Called onLevelChange:', firstLevel.name);
-      
-      this.onLandmarkEvent?.(firstLevel.isLandmarkEvent);
-      console.log('✅ [GameLoop] Called onLandmarkEvent:', firstLevel.isLandmarkEvent);
-      
+      this.onLandmarkEvent?.(firstLevel.isLandmarkEvent);      
       this.gameplayScene.triggerLandmarkEvent(firstLevel.isLandmarkEvent);
-      console.log('✅ [GameLoop] Called gameplayScene.triggerLandmarkEvent');
     }
   }
 

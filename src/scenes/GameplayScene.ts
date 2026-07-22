@@ -63,8 +63,6 @@ export class GameplayScene {
   }
 
   init(): void {
-    console.log('🎮 [GameplayScene] init() called');
-    
     this.container.removeChildren();
     this.activeVehicles = [];
     this.waveTimer = 0;
@@ -74,13 +72,9 @@ export class GameplayScene {
     this.lives = 3;
     audioManager.stopBGM();
     audioManager.playEngine();
-    
     // Reset delivery state BEFORE creating new entities
-    console.log('📊 [GameplayScene] BEFORE reset hasPackage:', this.hasPackage);
     this.hasPackage = false;
     this.deliveryTimer = 0;
-    console.log('✅ [GameplayScene] AFTER reset hasPackage:', this.hasPackage);
-    
     // Create new entity instances
     this.package = new PackageEntity();
     this.deliveryPoint = new DeliveryPointEntity();
@@ -88,14 +82,10 @@ export class GameplayScene {
     // Ensure entities are reset (active=false, visible=false)
     this.deliveryPoint.reset();
     this.package.reset();
-    console.log('✅ [GameplayScene] Reset entities - deliveryPoint.active:', this.deliveryPoint.active);
-
     // Sync hasPackage state to React UI AFTER local state is reset
-    console.log('🔔 [GameplayScene] Calling onPackageChange(false)...');
     this.onPackageChange?.(false);
 
     const levelCfg = levelData.levels[0];
-    console.log('📊 [GameplayScene] Loading level 0 config:', levelCfg.name);
     this.initialMultiplier = levelCfg.initialMultiplier;
     this.speedIncreaseRate = levelCfg.speedIncreaseRate;
     this.maxSpeedMultiplier = levelCfg.maxSpeedMultiplier;
@@ -446,7 +436,6 @@ export class GameplayScene {
         const dist = other.container.x - vehicle.container.x;
 
         if (dist > -safeGap && dist < safeGap) {
-          console.log(`[Runtime Overlap] Type: ${vehicle.vehicleType} and ${other.vehicleType}. Dist: ${dist}, SafeGap: ${safeGap}. Adjusting positions.`);
           if (vehicle.container.x > other.container.x) {
             vehicle.container.x = other.container.x + safeGap;
           } else {

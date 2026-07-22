@@ -105,11 +105,6 @@ function App() {
   };
 
  const handleRestart = () => {
-    console.log('🔄 [main.tsx] handleRestart called');
-    console.log('📊 [main.tsx] State BEFORE:', JSON.stringify({ 
-      score, lives, deliveredCount, landmark, hasPackage 
-    }));
-
     // Clear mọi timeout landmark đang pending từ lần chơi trước
     if (landmarkTimerRef.current) {
       clearTimeout(landmarkTimerRef.current);
@@ -123,8 +118,6 @@ function App() {
     setHasPackage(false);
     setLandmark("Cầu Rồng");
     setLandmarkVisible(false);
-
-    console.log('🎯 [main.tsx] Calling transitionTo(GAMEPLAY)...');
     gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
   };
 

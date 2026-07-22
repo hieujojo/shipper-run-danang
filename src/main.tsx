@@ -21,7 +21,16 @@ function App() {
   const [hasPackage, setHasPackage] = useState(false);
   const [landmarkVisible, setLandmarkVisible] = useState(false);
   const [deliveredCount, setDeliveredCount] = useState(0);
-
+  const landmarkTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onLevelChangeRef = useRef<(name: string) => void>(() => { });
+  onLevelChangeRef.current = (name: string) => {
+    if (landmarkTimerRef.current) clearTimeout(landmarkTimerRef.current);
+    setLandmark(name);
+    setLandmarkVisible(true);
+    landmarkTimerRef.current = setTimeout(() => {
+      setLandmarkVisible(false);
+    }, 3000);
+  };
   useEffect(() => {
     const app = new Application();
     // Expose app to global scope for PixiJS DevTools
@@ -75,9 +84,7 @@ function App() {
       gameLoop.onLivesChange = (l: number) => setLives(l);
       gameLoop.onPackageChange = (val: boolean) => setHasPackage(val);
       gameLoop.onLevelChange = (name: string) => {
-        setLandmark(name);
-        setLandmarkVisible(true);
-        setTimeout(() => setLandmarkVisible(false), 3000);
+        onLevelChangeRef.current(name);
       };
       gameLoop.onScoreUpdate = (s: number) => setScore(s);
       gameLoop.onDeliveredCountChange = (c: number) => setDeliveredCount(c);
@@ -97,10 +104,27 @@ function App() {
     gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
   };
 
-  const handleRestart = () => {
+ const handleRestart = () => {
+    console.log('🔄 [main.tsx] handleRestart called');
+    console.log('📊 [main.tsx] State BEFORE:', JSON.stringify({ 
+      score, lives, deliveredCount, landmark, hasPackage 
+    }));
+
+    // Clear mọi timeout landmark đang pending từ lần chơi trước
+    if (landmarkTimerRef.current) {
+      clearTimeout(landmarkTimerRef.current);
+      landmarkTimerRef.current = null;
+    }
+
+    // Force reset state về đúng trạng thái ban đầu TRƯỚC khi GameLoop callback chạy
     setScore(0);
     setLives(3);
     setDeliveredCount(0);
+    setHasPackage(false);
+    setLandmark("Cầu Rồng");
+    setLandmarkVisible(false);
+
+    console.log('🎯 [main.tsx] Calling transitionTo(GAMEPLAY)...');
     gameLoopRef.current?.transitionTo(GameState.GAMEPLAY);
   };
 
@@ -124,5 +148,5 @@ function App() {
 }
 
 createRoot(document.getElementById("root")!).render(
-    <App />
+  <App />
 );

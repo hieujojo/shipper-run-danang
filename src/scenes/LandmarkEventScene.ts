@@ -70,11 +70,6 @@ export class LandmarkEventScene {
     
     const targetScaleX = scaledW / baseW;
     const targetScaleY = scaledH / baseH;
-
-    console.log("LandmarkEventScene Config:", cfg);
-    console.log("Texture state:", { width: tex.width, height: tex.height, baseW, baseH });
-    console.log("Scaled dimensions:", { scaledW, scaledH, targetScaleX, targetScaleY });
-
     this.bridgeContainer = new Container();
     this.container.addChild(this.bridgeContainer);
 

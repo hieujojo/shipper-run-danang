@@ -105,7 +105,7 @@ export function GameOverScreen({ score, region, packageCount, onRestart }: GameO
             gap: '1vw'
           }}
         >
-          <FaBomb style={{ fontSize: '0.8em' }} /> HẾT GIỜ RỒI!
+          <FaBomb style={{ fontSize: '0.8em' }} /> BẠN ĐÃ THUA MẤT RỒI!
         </h1>
 
         {/* Tiêu đề phụ + số gói đã giao */}

@@ -47,6 +47,8 @@ npm run build
 
 ## 🕹️ Điều khiển
 
+### Desktop (Keyboard)
+
 | Phím | Hành động |
 |---|---|
 | `←` | Di chuyển sang trái |
@@ -54,6 +56,15 @@ npm run build
 | `↑` | Di chuyển lên trên |
 | `↓` | Di chuyển xuống dưới |
 | `Space` | Boost tăng tốc — giữ để duy trì |
+
+### Mobile (Touch)
+
+| Control | Hành động |
+|---|---|
+| D-Pad | Di chuyển 4 hướng |
+| Nút Boost | Tăng tốc — giữ để duy trì |
+
+> Khuyến nghị xoay ngang màn hình khi chơi trên điện thoại để có trải nghiệm tốt nhất.
 
 ---
 
@@ -148,7 +159,7 @@ shipper-run-danang/
 │   ├── core/                # GameLoop, GameState, Constants
 │   ├── data/                # levelData.json
 │   ├── entities/            # PlayerEntity, VehicleEntity, PackageEntity, DeliveryPointEntity
-│   ├── scenes/              # GameplayScene, LandmarkEventScene, GameOverScene
+│   ├── scenes/              # GameplayScene, LandmarkEventScene
 │   ├── ui/                  # StartScreen, HudOverlay, LandmarkBanner, GameOverScreen
 │   └── utils/               # Object pooling, particleSystem, effectsManager
 ├── RULES.md

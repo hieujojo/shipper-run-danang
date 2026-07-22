@@ -2,7 +2,6 @@ import { Application } from "pixi.js";
 import { GameStateManager, GameState } from "./GameState";
 import { StartScene } from "../scenes/StartScene";
 import { GameplayScene } from "../scenes/GameplayScene";
-import { GameOverScene } from "../scenes/GameOverScene";
 import levelData from "../data/levelData.json";
 
 export class GameLoop {
@@ -10,7 +9,6 @@ export class GameLoop {
   private stateManager: GameStateManager;
   private startScene: StartScene;
   private gameplayScene: GameplayScene;
-  private gameOverScene: GameOverScene;
   private scoreTimer: number = 0;
   private score: number = 0;
   private deliveredCount: number = 0;
@@ -30,7 +28,6 @@ export class GameLoop {
     this.stateManager = new GameStateManager();
     this.startScene = new StartScene(app);
     this.gameplayScene = new GameplayScene(app);
-    this.gameOverScene = new GameOverScene(app);
 
     this.gameplayScene.onGameOver = () => this.transitionTo(GameState.GAME_OVER);
     this.gameplayScene.onLivesChange = (l: number) => this.onLivesChange?.(l);
@@ -42,7 +39,6 @@ export class GameLoop {
       this.onDeliveredCountChange?.(this.deliveredCount);
     };
     this.startScene.onStart = () => this.transitionTo(GameState.GAMEPLAY);
-    this.gameOverScene.onRestart = () => this.transitionTo(GameState.GAMEPLAY);
   }
 
   start(): void {
@@ -78,9 +74,6 @@ export class GameLoop {
             this.onLandmarkEvent?.(level.isLandmarkEvent);
             this.gameplayScene.triggerLandmarkEvent(level.isLandmarkEvent);
           }
-          break;
-        case GameState.GAME_OVER:
-          this.gameOverScene.update(ticker.deltaTime);
           break;
       }
     } catch (err: any) {
@@ -129,10 +122,6 @@ export class GameLoop {
       case GameState.GAMEPLAY:
         this.gameplayScene.init();
         this.app.stage.addChild(this.gameplayScene.container);
-        break;
-      case GameState.GAME_OVER:
-        this.gameOverScene.init();
-        this.app.stage.addChild(this.gameOverScene.container);
         break;
     }
   }

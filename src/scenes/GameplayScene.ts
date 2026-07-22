@@ -322,10 +322,13 @@ export class GameplayScene {
     this.player?.update(deltaTime, roadTop, roadBottom);
 
     this.elapsedTime += deltaTime / TARGET_FPS;
-    this.speedMultiplier = Math.min(
+    const baseSpeed = Math.min(
       this.initialMultiplier + this.elapsedTime * this.speedIncreaseRate,
       this.maxSpeedMultiplier
     );
+    
+    const isDashing = this.player?.getInputState().space ?? false;
+    this.speedMultiplier = baseSpeed * (isDashing ? 1.6 : 1.0);
 
     this.updateDelivery(deltaTime);
     this.particles.update(deltaTime);
@@ -370,12 +373,12 @@ export class GameplayScene {
       const vehicle = this.activeVehicles[i];
       vehicle.update(deltaTime, currentVehicleSpeed);
       
-      if (this.speedMultiplier > 1.1) {
+      if (baseSpeed > 1.1) {
         const vCfg = VEHICLE_CONFIGS[vehicle.vehicleType];
         this.particles.emitSpeedTrail(
           vehicle.container.x,
           vehicle.container.y,
-          this.speedMultiplier,
+          baseSpeed,
           true,
           vCfg.smokeOffset,
           vCfg.smokeOffsetY || 0

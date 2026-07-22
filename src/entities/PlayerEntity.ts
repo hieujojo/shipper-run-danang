@@ -53,6 +53,10 @@ export class PlayerEntity implements IPlayerEntity {
     return this.invincibleTimer > 0;
   }
 
+  getInputState() {
+    return this.input.getState();
+  }
+
   update(deltaTime: number, boundTop: number, boundBottom: number): void {
     // Invincible timer
     if (this.invincibleTimer > 0) {

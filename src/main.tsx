@@ -72,8 +72,7 @@ function App() {
         stats.update();
       });
 
-      // Tải trước các ảnh Pixel Art
-      await Assets.load([
+      const loadedTextures = await Assets.load([
         "/assets/player_shipper.png",
         "/assets/vehicle_car.png",
         "/assets/vehicle_motorbike.png",
@@ -82,7 +81,13 @@ function App() {
         "/assets/cau-rong-landmark.png",
         "/assets/cau-song-han_landmark.png",
         "/assets/cau-tran-thi-ly_landmark.png",
+        "/assets/City_Tiles/city_bg_layer1.png",
+        "/assets/City_Tiles/city_bg_layer2.png",
       ]);
+
+      if (import.meta.env.DEV) {
+        console.log("[Assets.load] Loaded textures:", Object.keys(loadedTextures));
+      }
 
       if (containerRef.current) {
         const canvas = app.canvas as HTMLCanvasElement;
@@ -123,7 +128,7 @@ function App() {
     gameLoopRef.current?.setTouchInput(partial);
   }, []);
 
- const handleRestart = () => {
+  const handleRestart = () => {
     // Clear mọi timeout landmark đang pending từ lần chơi trước
     if (landmarkTimerRef.current) {
       clearTimeout(landmarkTimerRef.current);
@@ -146,14 +151,14 @@ function App() {
       {gameState === GameState.START && (
         <GameStartScreen onStart={handleStart} />
       )}
-     {gameState === GameState.GAMEPLAY && (
+      {gameState === GameState.GAMEPLAY && (
         <div style={{
           position: "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: `min(100vw, ${100 * (16/9)}vh)`,
-          height: `min(100vh, ${100 * (9/16)}vw)`,
+          width: `min(100vw, ${100 * (16 / 9)}vh)`,
+          height: `min(100vh, ${100 * (9 / 16)}vw)`,
           pointerEvents: "none",
         }}>
           <HudOverlay score={score} lives={lives} hasPackage={hasPackage} />

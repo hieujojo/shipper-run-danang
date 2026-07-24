@@ -1,5 +1,4 @@
-import { Container, Graphics } from "pixi.js";
-import {
+import { Assets, Container, Graphics, Texture, TilingSprite } from "pixi.js"; import {
   CANVAS_WIDTH, CANVAS_HEIGHT, LANE_COUNT, TARGET_FPS,
   BASE_SCROLL_SPEED, INITIAL_MULTIPLIER, SPEED_INCREASE_RATE, MAX_SPEED_MULTIPLIER,
   ROAD_TOP, ROAD_BOTTOM
@@ -30,6 +29,8 @@ export class GameplayScene {
   private baseEnvironment!: Container;
   private roadContainer!: Container;
   private buildingContainer!: Container;
+  private bgLayer1!: TilingSprite;
+  private bgLayer2!: TilingSprite;
   private roadOffset: number = 0;
   private package: PackageEntity | null = null;
   private deliveryPoint: DeliveryPointEntity | null = null;
@@ -214,11 +215,11 @@ export class GameplayScene {
 
     for (let l = 0; l < LANE_COUNT; l++) {
       const ly = this.lanePositions[l];
-      
+
       const tooClose = this.activeVehicles.some((v) => {
         if (Math.abs(v.container.y - ly) >= 10) return false;
         if (v.container.x < x - SPAWN_CHECK_ZONE) return false;
-        
+
         const existingType = v.vehicleType;
         const existingHalfW = VEHICLE_CONFIGS[existingType].width / 2;
         const minDist = existingHalfW + width / 2 + 50;
@@ -228,9 +229,9 @@ export class GameplayScene {
 
       if (!tooClose) safeLanes.push(l);
     }
-    
+
     if (safeLanes.length > 0) {
-       return safeLanes[Math.floor(Math.random() * safeLanes.length)];
+      return safeLanes[Math.floor(Math.random() * safeLanes.length)];
     }
     return Math.floor(Math.random() * LANE_COUNT);
   }
@@ -301,44 +302,48 @@ export class GameplayScene {
 
   private buildBuildings(): void {
     this.buildingContainer.removeChildren();
-    const buildingColors = [0x4a4a6a, 0x5a3a5a, 0x3a5a4a, 0x5a4a3a, 0x3a4a6a];
-    const GAP = 8;
 
-    let xTop = -200;
-    while (xTop < CANVAS_WIDTH * 2 + 200) {
-      const w = 60 + Math.random() * 100;
-      const h = CANVAS_HEIGHT * 0.15;
-      const color = buildingColors[Math.floor(Math.random() * buildingColors.length)];
-      const b = new Graphics();
-      b.rect(xTop, GAP, w, h);
-      b.fill(color);
-      for (let row = 0; row < 2; row++) {
-        for (let col = 0; col < Math.floor(w / 20); col++) {
-          b.rect(xTop + 8 + col * 18, GAP + 8 + row * 18, 10, 12);
-          b.fill(Math.random() > 0.4 ? 0xffee88 : 0x2a2a3a);
-        }
-      }
-      this.buildingContainer.addChild(b);
-      xTop += w + GAP;
+    // PixiJS v8: dùng Assets.get() thay vì Texture.from() để đảm bảo lấy đúng từ cache
+    // Texture.from() trả về Texture.EMPTY (im lặng) nếu key không khớp cache → TilingSprite trắng
+    const layer1Key = "/assets/City_Tiles/city_bg_layer1.png";
+    const layer2Key = "/assets/City_Tiles/city_bg_layer2.png";
+
+    const layer1Tex: Texture = (Assets.get<Texture>(layer1Key) as Texture | undefined) ?? Texture.EMPTY;
+    const layer2Tex: Texture = (Assets.get<Texture>(layer2Key) as Texture | undefined) ?? Texture.EMPTY;
+
+    if (import.meta.env.DEV) {
+      console.log("[buildBuildings] layer1 texture:", layer1Tex.width, "x", layer1Tex.height, layer1Tex === Texture.EMPTY ? "⚠️ EMPTY!" : "✅");
+      console.log("[buildBuildings] layer2 texture:", layer2Tex.width, "x", layer2Tex.height, layer2Tex === Texture.EMPTY ? "⚠️ EMPTY!" : "✅");
     }
 
-    let xBottom = -150;
-    while (xBottom < CANVAS_WIDTH * 2 + 200) {
-      const w = 60 + Math.random() * 100;
-      const h = CANVAS_HEIGHT * 0.15;
-      const color = buildingColors[Math.floor(Math.random() * buildingColors.length)];
-      const b = new Graphics();
-      b.rect(xBottom, CANVAS_HEIGHT * 0.8 + GAP, w, h);
-      b.fill(color);
-      for (let row = 0; row < 2; row++) {
-        for (let col = 0; col < Math.floor(w / 20); col++) {
-          b.rect(xBottom + 8 + col * 18, CANVAS_HEIGHT * 0.8 + GAP + 8 + row * 18, 10, 12);
-          b.fill(Math.random() > 0.4 ? 0xffee88 : 0x2a2a3a);
-        }
-      }
-      this.buildingContainer.addChild(b);
-      xBottom += w + GAP;
-    }
+    // --- PHẦN TRÊN màn hình (layer1 = tòa nhà xa, tối hơn) ---
+    const stripH = CANVAS_HEIGHT * 0.2; // 144px
+
+    // TilingSprite KHÔNG tự scale texture — phải set tileScale để
+    // texture (1024×346) vừa khít chiều cao của strip (144px).
+    const scale1Y = layer1Tex.height > 0 ? stripH / layer1Tex.height : 1;
+    const scale2Y = layer2Tex.height > 0 ? stripH / layer2Tex.height : 1;
+
+    this.bgLayer1 = new TilingSprite({
+      texture: layer1Tex,
+      width: CANVAS_WIDTH,
+      height: stripH,
+    });
+    this.bgLayer1.tileScale.set(scale1Y); // scale đều X/Y để giữ aspect ratio
+    this.bgLayer1.x = 0;
+    this.bgLayer1.y = 0;
+    this.buildingContainer.addChild(this.bgLayer1);
+
+    // --- PHẦN DƯỚI màn hình (layer2 = tòa nhà gần, chi tiết hơn) ---
+    this.bgLayer2 = new TilingSprite({
+      texture: layer2Tex,
+      width: CANVAS_WIDTH,
+      height: stripH,
+    });
+    this.bgLayer2.tileScale.set(scale2Y);
+    this.bgLayer2.x = 0;
+    this.bgLayer2.y = CANVAS_HEIGHT * 0.8;
+    this.buildingContainer.addChild(this.bgLayer2);
   }
 
   private buildRoadMarkings(): void {
@@ -365,7 +370,7 @@ export class GameplayScene {
       this.initialMultiplier + this.elapsedTime * this.speedIncreaseRate,
       this.maxSpeedMultiplier
     );
-    
+
     const isDashing = this.player?.getInputState().space ?? false;
     this.speedMultiplier = baseSpeed * (isDashing ? 1.6 : 1.0);
 
@@ -392,12 +397,9 @@ export class GameplayScene {
     const currentScrollSpeed = BASE_SCROLL_SPEED * this.speedMultiplier * this.speedOverride * deltaTime;
     this.roadOffset -= currentScrollSpeed;
 
-    this.buildingContainer.x = this.roadOffset * 0.6;
-    if (this.buildingContainer.x <= -CANVAS_WIDTH) {
-      this.buildingContainer.x = 0;
-      this.roadOffset += CANVAS_WIDTH / 0.6;
-      this.buildBuildings();
-    }
+    // Parallax: layer1 xa cuộn chậm, layer2 gần cuộn nhanh hơn
+    if (this.bgLayer1) this.bgLayer1.tilePosition.x = this.roadOffset * 0.3;
+    if (this.bgLayer2) this.bgLayer2.tilePosition.x = this.roadOffset * 0.5;
 
     this.roadContainer.x = this.roadOffset % 40;
 
@@ -411,7 +413,7 @@ export class GameplayScene {
     for (let i = this.activeVehicles.length - 1; i >= 0; i--) {
       const vehicle = this.activeVehicles[i];
       vehicle.update(deltaTime, currentVehicleSpeed);
-      
+
       if (baseSpeed > 1.1) {
         const vCfg = VEHICLE_CONFIGS[vehicle.vehicleType];
         this.particles.emitSpeedTrail(
@@ -547,13 +549,13 @@ export class GameplayScene {
         const actualDist = Math.abs(v.container.x - x);
         return actualDist < minDist;
       });
-      
+
       let collidesWithItem = false;
       if (!this.hasPackage && this.package?.active && Math.abs(this.package.container.y - ly) < 10) {
-         if (Math.abs(this.package.container.x - x) < 200) collidesWithItem = true;
+        if (Math.abs(this.package.container.x - x) < 200) collidesWithItem = true;
       }
       if (this.hasPackage && this.deliveryPoint?.active && Math.abs(this.deliveryPoint.container.y - ly) < 10) {
-         if (Math.abs(this.deliveryPoint.container.x - x) < 200) collidesWithItem = true;
+        if (Math.abs(this.deliveryPoint.container.x - x) < 200) collidesWithItem = true;
       }
 
       if (!tooClose && !collidesWithItem) safeLanes.push(l);

@@ -209,3 +209,8 @@ Game tự động kết nối với extension thông qua `__PIXI_APP__` ở môi
 ## 📜 Nguyên tắc phát triển
 
 Mọi đóng góp **bắt buộc** tuân thủ quy ước trong `RULES.md`.
+
+## 🎨 Credits
+| Asset | Author | Source |
+|---|---|---|
+| City Tiles | GandalfHardcore | [itch.io](https://gandalfhardcore.itch.io) |
